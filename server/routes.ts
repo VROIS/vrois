@@ -1984,6 +1984,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { language, type } = req.params;
       
+      // 🔧 2026-01-22: 디버깅 로그 - 어떤 언어가 요청되는지 확인
+      console.log(`🌐 [DEBUG] /api/prompts 요청 - language: "${language}", type: "${type}"`);
+      
       if (!['image', 'text'].includes(type)) {
         return res.status(400).json({ error: '유효하지 않은 타입입니다.' });
       }
