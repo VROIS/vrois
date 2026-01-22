@@ -64,35 +64,14 @@ const LanguageHelper = {
       }
     }
     
-    // 4. 🌐 DB에 저장 (로그인된 사용자만)
-    this.saveToDatabase(lang);
+    // 2026-01-22: DB 저장 제거 → localStorage만 사용
     
-    // 5. 🎤 음성 인식 언어도 동시 업데이트
+    // 4. 🎤 음성 인식 언어도 동시 업데이트
     if (window.updateRecognitionLang) {
       window.updateRecognitionLang();
     }
   },
   
-  /**
-   * DB에 선호 언어 저장 (비동기, 실패해도 무시)
-   */
-  saveToDatabase: async function(lang) {
-    try {
-      const response = await fetch('/api/profile/language', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language: lang }),
-        credentials: 'include'
-      });
-      if (response.ok) {
-        console.log('🌐 DB에 선호 언어 저장:', lang);
-      }
-    } catch (error) {
-      // 비로그인 상태면 실패 - 무시
-      console.log('🌐 DB 저장 스킵 (비로그인 또는 오류)');
-    }
-  },
-
   /**
    * 페이지 로드 시 저장된 언어 초기화
    * - HTML <head>에서 호출

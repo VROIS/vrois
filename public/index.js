@@ -5229,8 +5229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 인증 모달 닫기
                 authModal?.classList.add('hidden');
                 
-                // 🌐 인증 후 DB에서 선호 언어 로드
-                await loadUserLanguage();
+                // 2026-01-22: DB 언어 로드 제거 → localStorage만 사용
                 
                 // pendingShareUrl이 있으면 새 창에서 열기 (현재 언어로 다시 적용!)
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
