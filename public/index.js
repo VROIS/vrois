@@ -5067,6 +5067,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // localStorage에 저장
         localStorage.setItem('appLanguage', selectedLang);
         
+        // 🔄 2025-01-22: 프롬프트 캐시 클리어 (AI 응답 언어 버그 수정)
+        gemini.clearPromptCache();
+        
         // 🔧 2026-01-07: 한국어 선택 시 googtrans 쿠키 완전 삭제 (불어 전환 버그 해결)
         const domain = window.location.hostname;
         if (selectedLang === 'ko') {

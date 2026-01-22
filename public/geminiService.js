@@ -58,6 +58,16 @@ const promptCache = {
 };
 
 /**
+ * 🔄 2025-01-22: 언어 변경 시 프롬프트 캐시 클리어
+ * 언어 선택 후 AI 응답이 이전 언어로 오는 버그 수정
+ */
+export function clearPromptCache() {
+  promptCache.image = {};
+  promptCache.text = {};
+  console.log('🔄 [프롬프트캐시] 전체 클리어 완료');
+}
+
+/**
  * 서버에서 언어별 프롬프트를 가져옵니다.
  * @param {string} language - 언어 코드 (ko, en, zh-CN, ja, fr, de, es)
  * @param {string} type - 프롬프트 타입 (image, text)
