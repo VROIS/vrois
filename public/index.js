@@ -365,73 +365,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ═══════════════════════════════════════════════════════════════
-    // 🌐 사용자 언어 감지 (DB + 구글 번역 쿠키)
+    // 🌐 사용자 언어 감지 (localStorage 기반)
     // 목적: 추천모음 클릭/공유 시 해당 언어로 공유페이지 자동 번역
-    // 우선순위: DB preferredLanguage > 쿠키 > 기본값(한국어)
+    // 2026-01-22: DB 동기화 제거 → localStorage만 사용 (버그 해결)
     // ═══════════════════════════════════════════════════════════════
-    let userPreferredLanguage = 'ko'; // 기본값
     
     function getCurrentUserLang() {
-        // 1. DB에 저장된 선호 언어 사용 (가장 높은 우선순위)
-        if (userPreferredLanguage && userPreferredLanguage !== 'ko') {
-            return userPreferredLanguage;
+        // 1. localStorage 확인 (랜딩페이지에서 저장됨)
+        const storedLang = localStorage.getItem('appLanguage');
+        if (storedLang && storedLang !== 'ko') {
+            return storedLang;
         }
         
-        // 2. googtrans 쿠키 확인 (예: /ko/ja)
-        const cookies = document.cookie.split(';');
-        for (const cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'googtrans' && value) {
-                const match = value.match(/\/ko\/([a-z]{2}(-[A-Z]{2})?)/);
-                if (match) {
-                    userPreferredLanguage = match[1]; // 캐시 업데이트
-                    return userPreferredLanguage;
-                }
-            }
-        }
-        // 3. 기본값 한국어
+        // 2. 기본값 한국어
         return 'ko';
-    }
-    
-    // 🌐 서버에서 사용자 선호 언어 로드 (인증 후)
-    async function loadUserLanguage() {
-        try {
-            const response = await fetch('/api/profile/language', { credentials: 'include' });
-            if (response.ok) {
-                const data = await response.json();
-                userPreferredLanguage = data.language || 'ko';
-                console.log('🌐 사용자 선호 언어 로드:', userPreferredLanguage);
-                
-                // 🌐 DB 언어를 localStorage/쿠키에 동기화 (구글 번역 적용)
-                if (userPreferredLanguage !== 'ko') {
-                    localStorage.setItem('appLanguage', userPreferredLanguage);
-                    const domain = window.location.hostname;
-                    document.cookie = `googtrans=/ko/${userPreferredLanguage}; path=/; domain=${domain}`;
-                    document.cookie = `googtrans=/ko/${userPreferredLanguage}; path=/`;
-                    console.log('🌐 DB 언어 → localStorage/쿠키 동기화 완료');
-                }
-            }
-        } catch (error) {
-            console.warn('언어 로드 실패:', error);
-        }
-    }
-    
-    // 🌐 서버에 사용자 선호 언어 저장
-    async function saveUserLanguage(language) {
-        try {
-            const response = await fetch('/api/profile/language', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ language }),
-                credentials: 'include'
-            });
-            if (response.ok) {
-                userPreferredLanguage = language;
-                console.log('🌐 사용자 선호 언어 저장:', language);
-            }
-        } catch (error) {
-            console.error('언어 저장 실패:', error);
-        }
     }
     
     // URL에 언어 파라미터 추가 (한국어 제외)
@@ -1996,9 +1943,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- App Initialization ---
     async function initializeApp() {
         try {
-            // 🌐 앱 시작 시 사용자 선호 언어 로드 (인증 여부 관계없이)
-            await loadUserLanguage();
-            
+            // 2026-01-22: DB 언어 로드 제거 → localStorage만 사용
             await openDB();
         } catch(e) {
             console.error("Failed to open database", e);
