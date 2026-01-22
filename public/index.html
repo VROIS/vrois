@@ -742,25 +742,29 @@
                         // 일반 브라우저: 기존 동작
                         localStorage.setItem('landingVisited', 'true');
                         
-                        // 🔧 2026-01-19: Safari 전용 로직 - 쿠키 대신 JS로 직접 번역 트리거
-                        if (isSafari()) {
-                            console.log('🍎 Safari 감지 → localStorage 기반 언어 적용');
-                            // Safari는 쿠키가 잘 안 되므로 reload 후 JS로 처리
-                            window.location.reload();
-                            return;
-                        }
-                        
-                        // 🔧 2026-01-07: 한국어 선택 시 googtrans 쿠키 완전 삭제 (불어 전환 버그 해결)
+                        // 🔧 2026-01-22: 쿠키 설정을 Safari 체크 전에 먼저 실행!
+                        // 한국어 선택 시 googtrans 쿠키 완전 삭제
                         if (lang === 'ko') {
-                            // 쿠키 만료시켜서 삭제
+                            console.log('🗑️ [DEBUG] 한국어 선택 → googtrans 쿠키 삭제 시작');
+                            // 모든 가능한 도메인에서 삭제
                             document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                             document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
                             document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
-                            console.log('🗑️ googtrans 쿠키 삭제 완료');
+                            // 배포 도메인용 추가 삭제
+                            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.replit.app';
+                            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.replit.dev';
+                            console.log('🗑️ [DEBUG] googtrans 쿠키 삭제 완료');
                         } else {
+                            console.log('🌐 [DEBUG] 다른 언어 선택 → googtrans 쿠키 설정:', lang);
                             document.cookie = 'googtrans=/ko/' + lang + '; path=/';
                             document.cookie = 'googtrans=/ko/' + lang + '; path=/; domain=' + window.location.hostname;
                         }
+                        
+                        // 🔧 디버깅 박스 업데이트 (reload 전)
+                        if (window.updateDebugBox) window.updateDebugBox();
+                        
+                        // 페이지 새로고침 (모든 브라우저 공통)
+                        console.log('🔄 [DEBUG] 페이지 새로고침...');
                         window.location.reload();
                     }
                     
