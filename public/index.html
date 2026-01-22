@@ -529,19 +529,32 @@
         // 🔧 2026-01-22: 랜딩 페이지 진입 시 localStorage + googtrans 쿠키 완전 초기화
         // 이렇게 하면 이전에 저장된 프랑스어 등이 삭제됨
         (function() {
-            console.log('🧹 [RESET] 랜딩 페이지 진입 → localStorage + googtrans 완전 초기화');
-            console.log('🧹 [RESET] 초기화 전 localStorage.appLanguage:', localStorage.getItem('appLanguage'));
+            // 🔧 2026-01-22: 1회성 초기화 (이전에 저장된 fr 값 제거용)
+            // langResetDone 플래그가 있으면 이미 초기화했으므로 스킵
+            var resetVersion = 'v2';
+            var alreadyReset = localStorage.getItem('langResetDone');
             
-            // 1. localStorage.appLanguage 삭제
-            localStorage.removeItem('appLanguage');
+            console.log('🧹 [RESET] langResetDone:', alreadyReset, '/ 현재버전:', resetVersion);
             
-            // 2. googtrans 쿠키 삭제
-            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
-            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
-            
-            console.log('🧹 [RESET] 초기화 후 localStorage.appLanguage:', localStorage.getItem('appLanguage'));
-            console.log('🧹 [RESET] 완료 - 사용자가 언어 선택하면 저장됨');
+            if (alreadyReset !== resetVersion) {
+                console.log('🧹 [RESET] 1회성 초기화 실행!');
+                console.log('🧹 [RESET] 초기화 전 localStorage.appLanguage:', localStorage.getItem('appLanguage'));
+                
+                // 1. localStorage.appLanguage 삭제
+                localStorage.removeItem('appLanguage');
+                
+                // 2. googtrans 쿠키 삭제
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
+                
+                // 3. 플래그 저장 (다음부터 스킵)
+                localStorage.setItem('langResetDone', resetVersion);
+                
+                console.log('🧹 [RESET] 1회성 초기화 완료!');
+            } else {
+                console.log('🧹 [RESET] 이미 초기화됨 → 스킵');
+            }
         })();
         
         // 디버깅 박스 업데이트 함수
