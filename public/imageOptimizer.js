@@ -3,19 +3,19 @@
 /**
  * ⚡ 이미지 압축 최적화 로직 - AI Agent (2025-10-07)
  * 
- * 🎯 2026-01-24 업데이트: 1920px + 0.85 (Gemini 3.0 최적화)
- * - 구형 기기 처리 속도 개선을 위해 크기 축소
+ * 🎯 2026-01-24 업데이트: 1024px + 0.85 (Gemini 3.0 최적화)
+ * - 구형 기기 처리 속도 개선을 위해 크기 유지 + 품질 감소
  * - Gemini 3.0 모델은 작은 이미지에서도 인식률 우수
  * 
  * 📊 압축 테스트 결과:
  * - 0.9: 파일 커서 느림 (원본)
- * - 0.85: 1920px에서 ~200KB, 인식 정확 ✅
- * - 0.6: ~150KB, 인식 정확 (이전 설정)
+ * - 0.85: 1024px에서 ~100KB, 인식 정확 ✅
+ * - 0.6: ~80KB, 인식 정확
  * - 0.5 이하: Gemini 인식 속도 저하
  * 
  * 🔑 핵심 인사이트:
  * - 네트워크가 최대 병목 (클라우드 API 한계)
- * - 1920px가 Gemini 3.0의 최적 해상도
+ * - 1024px + 0.85가 속도/인식률 최적 밸런스
  * - 구형 기기 첫 업로드 속도 개선
  * 
  * ⚠️ 후임자에게:
@@ -28,7 +28,7 @@
  * @param {number} maxHeight 결과 이미지의 최대 높이입니다.
  * @returns {Promise<string>} 리사이즈된 이미지의 데이터 URL을 포함하는 Promise를 반환합니다.
  */
-export function optimizeImage(dataUrl, maxWidth = 1920, maxHeight = 1920) {
+export function optimizeImage(dataUrl, maxWidth = 1024, maxHeight = 1024) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
