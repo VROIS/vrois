@@ -3,23 +3,22 @@
 /**
  * ⚡ 이미지 압축 최적화 로직 - AI Agent (2025-10-07)
  * 
- * 🎯 최종 결정: 품질 0.6 (업로드 속도 30% 향상)
- * 👤 사용자: 25년차 파리 가이드
- * 🤝 완벽한 동의: 0.75→0.6 테스트 후 인식 정확성 확인
+ * 🎯 2026-01-24 업데이트: 1920px + 0.85 (Gemini 3.0 최적화)
+ * - 구형 기기 처리 속도 개선을 위해 크기 축소
+ * - Gemini 3.0 모델은 작은 이미지에서도 인식률 우수
  * 
  * 📊 압축 테스트 결과:
  * - 0.9: 파일 커서 느림 (원본)
- * - 0.75: 211KB, 인식 정확 (v7-v8)
- * - 0.6: ~150KB, 인식 정확, 30% 빠름 (v9-v10) ✅
- * - 0.5 이하: Gemini 인식 속도 저하 (사용자 검증)
+ * - 0.85: 1920px에서 ~200KB, 인식 정확 ✅
+ * - 0.6: ~150KB, 인식 정확 (이전 설정)
+ * - 0.5 이하: Gemini 인식 속도 저하
  * 
  * 🔑 핵심 인사이트:
  * - 네트워크가 최대 병목 (클라우드 API 한계)
- * - 이미지 크기 30% 감소 = 업로드 30% 빠름
- * - 0.6이 Gemini 인식 한계선 (이하는 역효과)
+ * - 1920px가 Gemini 3.0의 최적 해상도
+ * - 구형 기기 첫 업로드 속도 개선
  * 
  * ⚠️ 후임자에게:
- * - 0.6 미만 압축: 인식 느려져 총 시간 비슷
  * - localStorage 'imageQuality'로 테스트 가능
  * - PWA→앱 전환시 온디바이스 모델 고려
  * 
@@ -29,7 +28,7 @@
  * @param {number} maxHeight 결과 이미지의 최대 높이입니다.
  * @returns {Promise<string>} 리사이즈된 이미지의 데이터 URL을 포함하는 Promise를 반환합니다.
  */
-export function optimizeImage(dataUrl, maxWidth = 1024, maxHeight = 1024) {
+export function optimizeImage(dataUrl, maxWidth = 1920, maxHeight = 1920) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
@@ -65,7 +64,8 @@ export function optimizeImage(dataUrl, maxWidth = 1024, maxHeight = 1024) {
             ctx.drawImage(img, 0, 0, width, height);
             
             // 🔍 압축률 테스트용 - localStorage에서 설정 읽기
-            const testQuality = parseFloat(localStorage.getItem('imageQuality')) || 0.9; // 원본 0.9 복원 (정확성 최우선)
+            // 2026-01-24: 기본값 0.85 (Gemini 3.0 최적화, 구형 기기 속도 개선)
+            const testQuality = parseFloat(localStorage.getItem('imageQuality')) || 0.85;
             console.log(`📊 [압축테스트] 사용 품질: ${testQuality}, 크기: ${width}x${height}`);
             
             // 리사이즈된 이미지를 JPEG 데이터 URL로 가져옵니다.

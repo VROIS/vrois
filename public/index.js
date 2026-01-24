@@ -2454,6 +2454,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const base64Image = optimizedDataUrl.split(',')[1];
             currentContent.imageDataUrl = optimizedDataUrl;
 
+            // 🚀 2026-01-24: 구형 기기 대응 - 이미지 처리 완료 후 딜레이 (200ms)
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
             const responseStream = gemini.generateDescriptionStream(base64Image);
             
             clearInterval(loadingInterval);
