@@ -213,3 +213,6 @@ export async function* generateTextStream(prompt) {
         yield chunk;
     }
 }
+
+// 관리자 대시보드에서 프롬프트 저장 후 캐시 무효화용
+window.clearPromptCache = clearPromptCache;
