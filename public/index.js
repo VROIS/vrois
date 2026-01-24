@@ -2417,7 +2417,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         currentContent = { imageDataUrl: dataUrl, description: '' };
         
+        // 🎨 2026-01-24: blur→clear 애니메이션 (이미지 로딩 UX 개선)
+        resultImage.classList.add('image-loading');
         resultImage.src = dataUrl;
+        resultImage.onload = () => {
+            resultImage.classList.remove('image-loading');
+        };
         resultImage.classList.remove('hidden');
         loader.classList.remove('hidden');
         textOverlay.classList.add('hidden');

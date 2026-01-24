@@ -90,7 +90,12 @@
             width: 100vw; 
             height: 100vh; 
             object-fit: cover; 
-            z-index: 1; 
+            z-index: 1;
+            transition: filter 0.5s ease-out, opacity 0.5s ease-out;
+        }
+        .full-screen-bg.image-loading {
+            filter: blur(8px);
+            opacity: 0.7;
         }
         .ui-layer { 
             position: fixed; 
@@ -536,8 +541,8 @@
         })();
         </script>
         
-        <!-- 상단 로고 영역 - 50vh (2025-12-08 UX 최적화) -->
-        <div class="flex items-center justify-center" style="height: 50vh; flex-shrink: 0; margin-top: 100px;">
+        <!-- 상단 로고 영역 - 상단 이동 (2026-01-24) -->
+        <div class="flex items-center justify-center" style="height: 45vh; flex-shrink: 0; margin-top: 0; padding-top: env(safe-area-inset-top, 0);">
             <img src="/assets/landing-logo-CiUrtW71.jpg" alt="손안의 가이드 - Your Expert in Hand" class="max-w-[85%] h-full object-contain">
         </div>
         
