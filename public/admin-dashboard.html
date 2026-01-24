@@ -2613,7 +2613,10 @@
             container.innerHTML = '<p class="text-center text-gray-400 py-8">프롬프트 로딩 중...</p>';
             
             try {
-                const res = await fetch('/api/admin/prompts', { credentials: 'include' });
+                const res = await fetch('/api/admin/prompts', { 
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
                 
                 if (!res.ok) throw new Error('프롬프트 로드 실패');
                 
