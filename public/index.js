@@ -2418,12 +2418,19 @@ document.addEventListener('DOMContentLoaded', () => {
         currentContent = { imageDataUrl: dataUrl, description: '' };
         
         // 🎨 2026-01-24: blur→clear 애니메이션 (이미지 로딩 UX 개선)
-        resultImage.classList.add('image-loading');
+        // 이미지 로드 완료 후 blur 적용 → 0.1초 후 blur 제거 (검은색 방지)
         resultImage.src = dataUrl;
         resultImage.onload = () => {
-            resultImage.classList.remove('image-loading');
+            resultImage.classList.add('image-loading');
+            resultImage.classList.remove('hidden');
+            setTimeout(() => {
+                resultImage.classList.remove('image-loading');
+            }, 100);
         };
-        resultImage.classList.remove('hidden');
+        // 이미 캐시된 이미지인 경우 즉시 표시
+        if (resultImage.complete) {
+            resultImage.classList.remove('hidden');
+        }
         loader.classList.remove('hidden');
         textOverlay.classList.add('hidden');
         textOverlay.classList.remove('animate-in');
