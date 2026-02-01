@@ -42,7 +42,8 @@ export default defineConfig({
           'language-helper.js',
           'sw-share.js',
           'admin-settings.html',
-          'download.html'
+          'download.html',
+          'privacy.html'
         ];
         
         filesToCopy.forEach(file => {
