@@ -7,7 +7,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import { setupKakaoAuth } from "./kakaoAuth";
 import { generateLocationBasedContent, getLocationName, generateShareLinkDescription, generateCinematicPrompt, optimizeAudioScript, analyzeTextAndGenerateScript, analyzeImageAndGenerateScript, generatePersonaVoice, type GuideContent, type DreamShotPrompt, type AnalyzedScript } from "./gemini";
-import { insertGuideSchema, insertShareLinkSchema, insertSharedHtmlPageSchema, creditTransactions, users, notifications, pushSubscriptions, insertNotificationSchema, insertPushSubscriptionSchema, voiceConfigs, dreamStudioVideos } from "@shared/schema";
+import { insertGuideSchema, insertShareLinkSchema, insertSharedHtmlPageSchema, creditTransactions, users, notifications, pushSubscriptions, insertNotificationSchema, insertPushSubscriptionSchema, voiceConfigs, dreamStudioVideos, apiLogs } from "@shared/schema";
 import webpush from "web-push";
 import { eq, and, or, isNull } from "drizzle-orm";
 import { GoogleGenAI } from "@google/genai";
@@ -211,6 +211,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Gemini streaming endpoint
   app.post('/api/gemini', async (req: any, res) => {
+    // 📊 API 로깅 - 시작 시간 기록
+    const startTime = Date.now();
+    let logUserId: string | null = null;
+    let logStatusCode = 200;
+    let logErrorMessage: string | null = null;
+    
     try {
       const { base64Image, prompt, systemInstruction } = req.body;
 
@@ -218,12 +224,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isImageEmpty = !base64Image;
 
       if (isPromptEmpty && isImageEmpty) {
+        logStatusCode = 400;
+        logErrorMessage = "필수 데이터 누락";
         return res.status(400).json({ error: "요청 본문에 필수 데이터(prompt 또는 base64Image)가 누락되었습니다." });
       }
       
       // 🎯 2026-02-01: 크레딧 차감 버그 수정 - 세션 기반 사용자 ID 가져오기
       // req.user는 passport 미들웨어가 세션에서 자동으로 복원함
       const userId = req.user?.id || req.session?.passport?.user;
+      logUserId = userId || null;
       console.log(`🔍 [Gemini] userId: ${userId}, req.user: ${!!req.user}, session.passport: ${!!req.session?.passport?.user}`);
       
       if (userId && userId !== 'temp-user-id') {
@@ -235,6 +244,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             'AI 응답 생성'
           );
           if (!result.success) {
+            // 📊 API 로깅 - 크레딧 부족
+            const responseTime = Date.now() - startTime;
+            await db.insert(apiLogs).values({
+              type: 'gemini',
+              userId: logUserId,
+              responseTime,
+              estimatedCost: "0",
+              statusCode: 402,
+              errorMessage: '크레딧 부족',
+            });
             return res.status(402).json({ 
               error: "크레딧이 부족합니다.", 
               required: CREDIT_CONFIG.DETAIL_PAGE_COST,
@@ -329,9 +348,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.end();
+      
+      // 📊 API 로깅 - 성공 시 기록
+      const responseTime = Date.now() - startTime;
+      const estimatedCost = "0.015"; // Gemini 3.0 Flash: ~$0.015/call
+      
+      await db.insert(apiLogs).values({
+        type: 'gemini',
+        userId: logUserId,
+        responseTime,
+        estimatedCost,
+        statusCode: 200,
+      });
+      
+      console.log(`📊 [API Log] Gemini 호출 성공: ${responseTime}ms, 사용자: ${logUserId || 'guest'}`);
 
     } catch (error) {
       console.error("Gemini API 오류:", error);
+      logStatusCode = 500;
+      logErrorMessage = String(error);
+      
+      // 📊 API 로깅 - 실패 시도 기록
+      const responseTime = Date.now() - startTime;
+      try {
+        await db.insert(apiLogs).values({
+          type: 'gemini',
+          userId: logUserId,
+          responseTime,
+          estimatedCost: "0", // 실패 시 비용 0
+          statusCode: 500,
+          errorMessage: logErrorMessage,
+        });
+      } catch (logError) {
+        console.error("API 로그 저장 실패:", logError);
+      }
+      
       res.status(500).json({ error: `AI 통신 중 오류: ${error}` });
     }
   });
