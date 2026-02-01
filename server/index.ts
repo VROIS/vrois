@@ -352,6 +352,11 @@ app.get('/s/:id', async (req, res) => {
     res.sendFile('download.html', { root: publicDir });
   });
   
+  app.get('/privacy.html', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile('privacy.html', { root: publicDir });
+  });
+  
   // 🔧 [공유링크 임시 비활성화] SEO 친화적 URL은 추후 구현 예정
 
   const server = await registerRoutes(app);
