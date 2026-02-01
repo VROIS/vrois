@@ -2714,7 +2714,7 @@ self.addEventListener('fetch', (event) => {
       // ⚠️ 배포본 호환성: api_logs, user_activity_logs 테이블이 없을 수 있음
       // 테이블 없으면 기본값 반환
       
-      // 일별 추이 (최근 7일) - api_logs 없어도 작동
+      // 🎯 2026-02-01: 일별 추이 (최근 7일) - credit_transactions에서 AI 호출 가져오기
       let dailyTrends: any[] = [];
       try {
         const dailyTrendsResult = await db.execute(sql`
@@ -2736,15 +2736,22 @@ self.addEventListener('fetch', (event) => {
             FROM shared_html_pages
             WHERE created_at >= CURRENT_DATE - INTERVAL '6 days'
             GROUP BY DATE(created_at)
+          ),
+          daily_ai_calls AS (
+            SELECT DATE(created_at) as date, COUNT(*) as count
+            FROM credit_transactions
+            WHERE type = 'usage' AND created_at >= CURRENT_DATE - INTERVAL '6 days'
+            GROUP BY DATE(created_at)
           )
           SELECT 
             d.date,
             COALESCE(u.count, 0) as new_users,
-            0 as api_calls,
+            COALESCE(a.count, 0) as api_calls,
             COALESCE(s.count, 0) as shares
           FROM dates d
           LEFT JOIN daily_users u ON d.date = u.date
           LEFT JOIN daily_shares s ON d.date = s.date
+          LEFT JOIN daily_ai_calls a ON d.date = a.date
           ORDER BY d.date DESC
         `);
         dailyTrends = dailyTrendsResult.rows;
