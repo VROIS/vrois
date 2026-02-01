@@ -54,7 +54,7 @@
 여행, AI, 가이드, 사진, 관광, 여행기록, 음성안내, 오프라인, 공유
 
 ## 연락처 정보
-- 이메일: support@my-handyguide1.com
+- 이메일: dbstour1@gmail.com
 - 웹사이트: https://My-handyguide1.replit.app
 - 개인정보처리방침: https://My-handyguide1.replit.app/privacy.html
 
