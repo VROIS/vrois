@@ -6,6 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🌐 언어 선택 바인딩 (admin-settings.html과 동일)
     LanguageHelper.bindLanguageSelect('languageSelect');
     
+    // 📳 햅틱 피드백 함수 (감각 보상 이론 적용)
+    function triggerHaptic(pattern = 50) {
+        if (navigator.vibrate) {
+            navigator.vibrate(pattern);
+        }
+    }
+    
+    // 📳 모든 interactive-btn에 햅틱 피드백 적용
+    document.querySelectorAll('.interactive-btn').forEach(btn => {
+        btn.addEventListener('click', () => triggerHaptic(50));
+    });
+    
     // DOM Elements
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('capture-canvas');
