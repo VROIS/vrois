@@ -1,7 +1,8 @@
-# Ignore root project files (we're in mobile-app subfolder)
-node_modules/
-
-# Ignore unnecessary files
+node_modules
+store-assets
 *.log
 *.md
-.expo-shared/
+.expo-shared
+.expo
+keystore.b64
+package-lock.json
