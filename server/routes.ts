@@ -100,15 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // 📱 Beta Tester Registration (2026-02-25)
-  // 목적: /beta 페이지에서 Google 로그인 후 테스터 등록 + 초대 이메일 발송
-  // ═══════════════════════════════════════════════════════════════
-  const betaRegisteredEmails = new Set<string>();
-
-  app.post('/api/beta/play-register', async (req: any, res) => {
-    try {
-      const userId = req.user?.id || req.session?.passport?.user;
-      if (!userId) return res.status(401).json({ message: 'Not authenticated' });
+  // 🗺️ Google Maps API 키 제공 (2025-10-26)
 
       const userRecord = await db.select({ email: users.email, name: users.name })
         .from(users)
