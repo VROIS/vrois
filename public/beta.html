@@ -76,8 +76,8 @@
     <div class="card w-full max-w-md p-8">
 
         <div class="flex justify-end mb-4 gap-2">
-            <button class="lang-btn" id="btnKo" onclick="setLang('ko')">한국어</button>
             <button class="lang-btn" id="btnEn" onclick="setLang('en')">English</button>
+            <button class="lang-btn" id="btnKo" onclick="setLang('ko')">한국어</button>
         </div>
 
         <div class="text-center mb-6">
@@ -259,8 +259,7 @@
         let currentLang = 'ko';
 
         function detectLang() {
-            const nav = navigator.language || navigator.userLanguage || 'ko';
-            return nav.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+            return 'en';
         }
 
         function setLang(lang) {

@@ -101,183 +101,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ═══════════════════════════════════════════════════════════════
   // 🗺️ Google Maps API 키 제공 (2025-10-26)
-
-      const userRecord = await db.select({ email: users.email, name: users.name })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-
-      if (!userRecord.length || !userRecord[0].email) {
-        return res.status(400).json({ message: 'No email found' });
-      }
-
-      const email = userRecord[0].email;
-      const name = userRecord[0].name || '';
-      const lang = req.body?.lang === 'en' ? 'en' : 'ko';
-
-      if (betaRegisteredEmails.has(email)) {
-        return res.json({ success: true, alreadyRegistered: true });
-      }
-
-      betaRegisteredEmails.add(email);
-
-      const SENDER = 'dbstour1@gmail.com';
-      const TESTING_LINK = 'https://play.google.com/apps/internaltest/4701739022712298192';
-      const GMAIL_PASS = process.env.GMAIL_APP_PASSWORD;
-
-      if (GMAIL_PASS) {
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: { user: SENDER, pass: GMAIL_PASS }
-        });
-
-        const isKo = lang === 'ko';
-        const subject = isKo
-          ? '[손안의 가이드] 베타 테스터 등록 완료 (Android 전용)'
-          : '[My Hand Guide] Beta Tester Registration Complete (Android only)';
-
-        const greeting = name ? (isKo ? `안녕하세요, ${name}님!` : `Hello, ${name}!`) : (isKo ? '안녕하세요!' : 'Hello!');
-
-        const htmlBody = isKo ? `
-<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"></head>
-<body style="font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
-  <div style="text-align:center;margin-bottom:24px;">
-    <h1 style="color:#1a73e8;font-size:22px;">🗺️ 손안의 가이드</h1>
-    <p style="color:#666;font-size:13px;">AI 여행 가이드 앱</p>
-  </div>
-  <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:16px;">
-    <h2 style="font-size:16px;margin-top:0;">${greeting}</h2>
-    <p style="line-height:1.8;">
-      곧 Google Play Store에 정식 출시되는 <strong>'내 손안의 가이드'</strong>의<br>
-      <strong>Android 베타 테스터로 등록</strong>되었습니다! 🎉
-    </p>
-    <p style="line-height:1.8;">📅 설치 후 <strong>14일간만</strong> 유지해주시면 정식 출시에 큰 도움이 됩니다.</p>
-  </div>
-  <div style="background:#e8f5e9;border-radius:12px;padding:20px;margin-bottom:16px;">
-    <h3 style="color:#2e7d32;margin-top:0;font-size:14px;">🎁 100 크레딧이 지급되었습니다!</h3>
-    <p style="font-size:13px;line-height:1.7;margin:0;">
-      앱 정식 출시 전에도 지금 바로 <strong>웹에서 AI 여행가이드</strong>를 사용하실 수 있습니다.<br>
-      👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a>
-    </p>
-  </div>
-  <div style="background:#e8f0fe;border-radius:12px;padding:20px;margin-bottom:24px;">
-    <h3 style="color:#1a73e8;margin-top:0;font-size:14px;">📋 Android 베타 앱 설치 방법</h3>
-    <ol style="font-size:13px;line-height:2.2;padding-left:20px;margin:0;">
-      <li>아래 버튼 클릭</li>
-      <li>파란 글자 <strong>"download it on Google Play"</strong> 클릭</li>
-      <li><strong>"설치"</strong> 클릭 → 완료!</li>
-    </ol>
-    <p style="font-size:12px;color:#c62828;margin-top:12px;margin-bottom:0;">
-      ⚠️ <strong>"Leave the program"</strong> 버튼은 절대 클릭하지 마세요 (탈퇴 버튼입니다)
-    </p>
-  </div>
-  <div style="text-align:center;margin-bottom:24px;">
-    <a href="${TESTING_LINK}" style="display:inline-block;background:#1a73e8;color:white;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:16px;font-weight:bold;">
-      📱 베타 앱 설치하기 (Android)
-    </a>
-    <p style="font-size:11px;color:#999;margin-top:8px;">Android 기기에서만 설치 가능합니다</p>
-  </div>
-  <div style="border-top:1px solid #eee;padding-top:16px;">
-    <p style="font-size:13px;color:#555;line-height:1.7;">
-      🤝 <strong>주변에 Android 폰 사용자가 계신가요?</strong><br>
-      아래 링크를 공유해주세요. Google 로그인 후 바로 테스터로 참여할 수 있습니다:<br>
-      👉 <a href="https://My-handyguide1.replit.app/beta" style="color:#1a73e8;">https://My-handyguide1.replit.app/beta</a>
-    </p>
-    <p style="font-size:13px;color:#555;line-height:1.7;margin-top:12px;">
-      🍎 <strong>iPhone 사용자이신가요?</strong><br>
-      Chrome 브라우저에서 웹 버전을 계속 이용하실 수 있습니다:<br>
-      👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a>
-    </p>
-  </div>
-  <div style="text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:16px;border-top:1px solid #eee;">
-    <p>문의: dbstour1@gmail.com</p>
-  </div>
-</body>
-</html>` : `
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"></head>
-<body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
-  <div style="text-align:center;margin-bottom:24px;">
-    <h1 style="color:#1a73e8;font-size:22px;">🗺️ My Hand Guide</h1>
-    <p style="color:#666;font-size:13px;">AI-powered travel guide app</p>
-  </div>
-  <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:16px;">
-    <h2 style="font-size:16px;margin-top:0;">${greeting}</h2>
-    <p style="line-height:1.8;">
-      You've been registered as an <strong>Android Beta Tester</strong> for<br>
-      <strong>My Hand Guide</strong> — coming soon to Google Play Store! 🎉
-    </p>
-    <p style="line-height:1.8;">📅 Please keep the app for <strong>14 days</strong> after install — it helps a lot!</p>
-  </div>
-  <div style="background:#e8f5e9;border-radius:12px;padding:20px;margin-bottom:16px;">
-    <h3 style="color:#2e7d32;margin-top:0;font-size:14px;">🎁 100 free credits added to your account!</h3>
-    <p style="font-size:13px;line-height:1.7;margin:0;">
-      You can use the AI travel guide on the web <strong>right now</strong> — no need to wait!<br>
-      👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a>
-    </p>
-  </div>
-  <div style="background:#e8f0fe;border-radius:12px;padding:20px;margin-bottom:24px;">
-    <h3 style="color:#1a73e8;margin-top:0;font-size:14px;">📋 How to install the Android beta app</h3>
-    <ol style="font-size:13px;line-height:2.2;padding-left:20px;margin:0;">
-      <li>Click the button below</li>
-      <li>Click the blue <strong>"download it on Google Play"</strong> link</li>
-      <li>Click <strong>"Install"</strong> → Done!</li>
-    </ol>
-    <p style="font-size:12px;color:#c62828;margin-top:12px;margin-bottom:0;">
-      ⚠️ Do <strong>NOT</strong> click the <strong>"Leave the program"</strong> button
-    </p>
-  </div>
-  <div style="text-align:center;margin-bottom:24px;">
-    <a href="${TESTING_LINK}" style="display:inline-block;background:#1a73e8;color:white;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:16px;font-weight:bold;">
-      📱 Install Beta App (Android)
-    </a>
-    <p style="font-size:11px;color:#999;margin-top:8px;">Android devices only</p>
-  </div>
-  <div style="border-top:1px solid #eee;padding-top:16px;">
-    <p style="font-size:13px;color:#555;line-height:1.7;">
-      🤝 <strong>Know someone with an Android phone?</strong><br>
-      Share this link — they can join as a tester right after signing in with Google:<br>
-      👉 <a href="https://My-handyguide1.replit.app/beta" style="color:#1a73e8;">https://My-handyguide1.replit.app/beta</a>
-    </p>
-    <p style="font-size:13px;color:#555;line-height:1.7;margin-top:12px;">
-      🍎 <strong>Have an iPhone?</strong><br>
-      You can still use the web version in Chrome:<br>
-      👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a>
-    </p>
-  </div>
-  <div style="text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:16px;border-top:1px solid #eee;">
-    <p>Contact: dbstour1@gmail.com</p>
-  </div>
-</body>
-</html>`;
-
-        await transporter.sendMail({
-          from: `"손안의 가이드" <${SENDER}>`,
-          to: email,
-          subject,
-          html: htmlBody
-        });
-
-        await transporter.sendMail({
-          from: `"손안의 가이드" <${SENDER}>`,
-          to: SENDER,
-          subject: `[베타 신청] 새 테스터: ${email}`,
-          text: `새 베타 테스터 신청\n\n이메일: ${email}\n이름: ${name}\n\nPlay Console에 추가 필요:\nhttps://play.google.com/console → 내부 테스트 → 테스터 탭`
-        });
-      }
-
-      res.json({ success: true, alreadyRegistered: false });
-    } catch (err: any) {
-      console.error('[Beta Register] Error:', err.message);
-      res.status(500).json({ message: 'Registration failed' });
-    }
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // 🗺️ Google Maps API 키 제공 (2025-10-26)
   // ═══════════════════════════════════════════════════════════════
   // 목적: 프론트엔드에서 Google Maps API 사용
   // 보안: API 키를 서버 환경변수에서 안전하게 제공
@@ -908,6 +731,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   await setupGoogleAuth(app);
   await setupKakaoAuth(app);
+
+  // ═══════════════════════════════════════════════════════════════
+  // 📱 Beta Tester Registration (2026-02-25)
+  // 목적: /beta 페이지에서 Google 로그인 후 테스터 등록 + 초대 이메일 발송
+  // setupAuth 이후에 등록해야 req.user/session이 정상 작동함
+  // ═══════════════════════════════════════════════════════════════
+  const betaRegisteredEmails = new Set<string>();
+
+  app.post('/api/beta/play-register', async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.session?.passport?.user;
+      if (!userId) return res.status(401).json({ message: 'Not authenticated' });
+
+      const userRecord = await db.select({ email: users.email, name: users.name })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!userRecord.length || !userRecord[0].email) {
+        return res.status(400).json({ message: 'No email found' });
+      }
+
+      const email = userRecord[0].email;
+      const name = userRecord[0].name || '';
+      const lang = req.body?.lang === 'en' ? 'en' : 'ko';
+
+      if (betaRegisteredEmails.has(email)) {
+        return res.json({ success: true, alreadyRegistered: true });
+      }
+
+      betaRegisteredEmails.add(email);
+
+      const BETA_SENDER = 'dbstour1@gmail.com';
+      const BETA_TESTING_LINK = 'https://play.google.com/apps/internaltest/4701739022712298192';
+      const BETA_GMAIL_PASS = process.env.GMAIL_APP_PASSWORD;
+
+      if (BETA_GMAIL_PASS) {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user: BETA_SENDER, pass: BETA_GMAIL_PASS }
+        });
+
+        const isKo = lang === 'ko';
+        const subject = isKo
+          ? '[손안의 가이드] 베타 테스터 등록 완료 (Android 전용)'
+          : '[My Hand Guide] Beta Tester Registration Complete (Android only)';
+        const greeting = name ? (isKo ? `안녕하세요, ${name}님!` : `Hello, ${name}!`) : (isKo ? '안녕하세요!' : 'Hello!');
+
+        const htmlBody = isKo ? `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"></head>
+<body style="font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
+  <div style="text-align:center;margin-bottom:24px;"><h1 style="color:#1a73e8;font-size:22px;">🗺️ 손안의 가이드</h1><p style="color:#666;font-size:13px;">AI 여행 가이드 앱</p></div>
+  <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:16px;">
+    <h2 style="font-size:16px;margin-top:0;">${greeting}</h2>
+    <p style="line-height:1.8;">곧 Google Play Store에 정식 출시되는 <strong>'내 손안의 가이드'</strong>의<br><strong>Android 베타 테스터로 등록</strong>되었습니다! 🎉</p>
+    <p style="line-height:1.8;">📅 설치 후 <strong>14일간만</strong> 유지해주시면 정식 출시에 큰 도움이 됩니다.</p>
+  </div>
+  <div style="background:#e8f5e9;border-radius:12px;padding:20px;margin-bottom:16px;">
+    <h3 style="color:#2e7d32;margin-top:0;font-size:14px;">🎁 100 크레딧이 지급되었습니다!</h3>
+    <p style="font-size:13px;line-height:1.7;margin:0;">앱 정식 출시 전에도 지금 바로 <strong>웹에서 AI 여행가이드</strong>를 사용하실 수 있습니다.<br>👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a></p>
+  </div>
+  <div style="background:#e8f0fe;border-radius:12px;padding:20px;margin-bottom:24px;">
+    <h3 style="color:#1a73e8;margin-top:0;font-size:14px;">📋 Android 베타 앱 설치 방법</h3>
+    <ol style="font-size:13px;line-height:2.2;padding-left:20px;margin:0;"><li>아래 버튼 클릭</li><li>파란 글자 <strong>"download it on Google Play"</strong> 클릭</li><li><strong>"설치"</strong> 클릭 → 완료!</li></ol>
+    <p style="font-size:12px;color:#c62828;margin-top:12px;margin-bottom:0;">⚠️ <strong>"Leave the program"</strong> 버튼은 절대 클릭하지 마세요</p>
+  </div>
+  <div style="text-align:center;margin-bottom:24px;"><a href="${BETA_TESTING_LINK}" style="display:inline-block;background:#1a73e8;color:white;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:16px;font-weight:bold;">📱 베타 앱 설치하기 (Android)</a><p style="font-size:11px;color:#999;margin-top:8px;">Android 기기에서만 설치 가능합니다</p></div>
+  <div style="border-top:1px solid #eee;padding-top:16px;">
+    <p style="font-size:13px;color:#555;line-height:1.7;">🤝 <strong>주변에 Android 폰 사용자가 계신가요?</strong><br>아래 링크를 공유해주세요. Google 로그인 후 바로 테스터로 참여할 수 있습니다:<br>👉 <a href="https://My-handyguide1.replit.app/beta" style="color:#1a73e8;">https://My-handyguide1.replit.app/beta</a></p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-top:12px;">🍎 <strong>iPhone 사용자이신가요?</strong><br>Chrome 브라우저에서 웹 버전을 계속 이용하실 수 있습니다:<br>👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a></p>
+  </div>
+  <div style="text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:16px;border-top:1px solid #eee;"><p>문의: dbstour1@gmail.com</p></div>
+</body></html>`
+        : `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
+  <div style="text-align:center;margin-bottom:24px;"><h1 style="color:#1a73e8;font-size:22px;">🗺️ My Hand Guide</h1><p style="color:#666;font-size:13px;">AI-powered travel guide app</p></div>
+  <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:16px;">
+    <h2 style="font-size:16px;margin-top:0;">${greeting}</h2>
+    <p style="line-height:1.8;">You've been registered as an <strong>Android Beta Tester</strong> for <strong>My Hand Guide</strong> — coming soon to Google Play Store! 🎉</p>
+    <p style="line-height:1.8;">📅 Please keep the app for <strong>14 days</strong> after install — it helps a lot!</p>
+  </div>
+  <div style="background:#e8f5e9;border-radius:12px;padding:20px;margin-bottom:16px;">
+    <h3 style="color:#2e7d32;margin-top:0;font-size:14px;">🎁 100 free credits added to your account!</h3>
+    <p style="font-size:13px;line-height:1.7;margin:0;">You can use the AI travel guide on the web <strong>right now</strong> — no need to wait!<br>👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a></p>
+  </div>
+  <div style="background:#e8f0fe;border-radius:12px;padding:20px;margin-bottom:24px;">
+    <h3 style="color:#1a73e8;margin-top:0;font-size:14px;">📋 How to install the Android beta app</h3>
+    <ol style="font-size:13px;line-height:2.2;padding-left:20px;margin:0;"><li>Click the button below</li><li>Click the blue <strong>"download it on Google Play"</strong> link</li><li>Click <strong>"Install"</strong> → Done!</li></ol>
+    <p style="font-size:12px;color:#c62828;margin-top:12px;margin-bottom:0;">⚠️ Do <strong>NOT</strong> click the <strong>"Leave the program"</strong> button</p>
+  </div>
+  <div style="text-align:center;margin-bottom:24px;"><a href="${BETA_TESTING_LINK}" style="display:inline-block;background:#1a73e8;color:white;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:16px;font-weight:bold;">📱 Install Beta App (Android)</a><p style="font-size:11px;color:#999;margin-top:8px;">Android devices only</p></div>
+  <div style="border-top:1px solid #eee;padding-top:16px;">
+    <p style="font-size:13px;color:#555;line-height:1.7;">🤝 <strong>Know someone with an Android phone?</strong><br>Share this link — they can join as a tester right after signing in with Google:<br>👉 <a href="https://My-handyguide1.replit.app/beta" style="color:#1a73e8;">https://My-handyguide1.replit.app/beta</a></p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-top:12px;">🍎 <strong>Have an iPhone?</strong><br>You can still use the web version in Chrome:<br>👉 <a href="https://My-handyguide1.replit.app" style="color:#1a73e8;">https://My-handyguide1.replit.app</a></p>
+  </div>
+  <div style="text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:16px;border-top:1px solid #eee;"><p>Contact: dbstour1@gmail.com</p></div>
+</body></html>`;
+
+        await transporter.sendMail({ from: `"손안의 가이드" <${BETA_SENDER}>`, to: email, subject, html: htmlBody });
+        await transporter.sendMail({
+          from: `"손안의 가이드" <${BETA_SENDER}>`,
+          to: BETA_SENDER,
+          subject: `[베타 신청] 새 테스터: ${email}`,
+          text: `새 베타 테스터 신청\n\n이메일: ${email}\n이름: ${name}\n\nPlay Console 등록 필요:\nhttps://play.google.com/console → 내부 테스트 → 테스터 탭`
+        });
+      }
+
+      res.json({ success: true, alreadyRegistered: false });
+    } catch (err: any) {
+      console.error('[Beta Register] Error:', err.message);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
