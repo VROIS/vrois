@@ -763,6 +763,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const BETA_SENDER = 'dbstour1@gmail.com';
       const BETA_TESTING_LINK = 'https://play.google.com/apps/internaltest/4701739022712298192';
       const BETA_GMAIL_PASS = process.env.GMAIL_APP_PASSWORD;
+      const PLAY_SA_JSON = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
+      const PACKAGE_NAME = 'com.sonanie.guide';
+
+      // Play Console API: 내부 테스트 트랙에 테스터 등록
+      if (PLAY_SA_JSON) {
+        try {
+          const { google } = await import('googleapis');
+          const auth = new google.auth.GoogleAuth({
+            credentials: JSON.parse(PLAY_SA_JSON),
+            scopes: ['https://www.googleapis.com/auth/androidpublisher']
+          });
+          const androidpublisher = google.androidpublisher({ version: 'v3', auth });
+          const current = await androidpublisher.testers.get({ packageName: PACKAGE_NAME, track: 'internal' });
+          const existingTesters: string[] = (current.data.testers as string[]) || [];
+          if (!existingTesters.includes(email)) {
+            await androidpublisher.testers.patch({
+              packageName: PACKAGE_NAME,
+              track: 'internal',
+              requestBody: { testers: [...existingTesters, email] }
+            });
+            console.log(`[Beta] Play Console 등록 완료: ${email}`);
+          } else {
+            console.log(`[Beta] 이미 Play Console에 등록됨: ${email}`);
+          }
+        } catch (playErr: any) {
+          console.error('[Beta] Play Console API 오류:', playErr.message);
+        }
+      }
 
       if (BETA_GMAIL_PASS) {
         const transporter = nodemailer.createTransport({

@@ -2140,6 +2140,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 authModal?.classList.add('pointer-events-none');
                 authModal?.classList.remove('pointer-events-auto');
                 console.log('✅ Auth modal closed - user is authenticated');
+
+                // /beta 경유 로그인: 베타 등록 백그라운드 처리
+                const betaSource = sessionStorage.getItem('betaSource');
+                if (betaSource === '1') {
+                    sessionStorage.removeItem('betaSource');
+                    fetch('/api/beta/play-register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lang: localStorage.getItem('appLanguage') || 'ko' })
+                    }).catch(() => {});
+                }
                 
                 // 대기 중인 공유 URL이 있으면 새 창에서 열기
                 const pendingUrl = localStorage.getItem('pendingShareUrl');

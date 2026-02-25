@@ -303,31 +303,15 @@
         }
 
         function loginWithGoogle() {
-            sessionStorage.setItem('authRedirect', '/beta?beta_check=1');
+            sessionStorage.setItem('authRedirect', '/');
+            sessionStorage.setItem('betaSource', '1');
             window.location.href = '/api/auth/google';
         }
 
         async function init() {
             const lang = detectLang();
             setLang(lang);
-
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('beta_check') === '1') {
-                history.replaceState({}, '', '/beta');
-                const authRes = await fetch('/api/auth/user');
-                if (authRes.ok) {
-                    // 백그라운드에서 베타 등록 처리 (fire-and-forget)
-                    fetch('/api/beta/play-register', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ lang: currentLang })
-                    }).catch(() => {});
-                }
-                // 로그인 여부와 상관없이 메인 앱으로 이동 (일반 로그인과 동일)
-                window.location.href = '/';
-            } else {
-                showScreen('landing');
-            }
+            showScreen('landing');
         }
 
         init();
