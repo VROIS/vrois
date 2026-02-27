@@ -2,7 +2,7 @@
   "expo": {
     "name": "손안의 가이드",
     "slug": "sonanie-guide",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -22,7 +22,8 @@
         "backgroundColor": "#4285F4"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.sonanie.guide"
+      "package": "com.sonanie.guide",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"

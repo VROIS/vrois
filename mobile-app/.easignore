@@ -6,3 +6,5 @@ store-assets
 .expo
 keystore.b64
 package-lock.json
+*.aab
+*.apk
