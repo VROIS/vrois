@@ -1,10 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, SafeAreaView, Platform, BackHandler } from 'react-native';
+import { StyleSheet, SafeAreaView, Platform, BackHandler, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useRef, useEffect } from 'react';
 import Constants from 'expo-constants';
 
 const WEB_APP_URL = Constants.expoConfig?.extra?.webAppUrl || 'https://my-handyguide.replit.app';
+
+const CHROME_USER_AGENT =
+  'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36';
 
 export default function App() {
   const webViewRef = useRef(null);
@@ -39,7 +42,7 @@ export default function App() {
         cacheEnabled={true}
         originWhitelist={['*']}
         mixedContentMode="compatibility"
-        userAgent="SonanieGuideApp/1.0"
+        userAgent={CHROME_USER_AGENT}
       />
     </SafeAreaView>
   );
