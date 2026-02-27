@@ -766,7 +766,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const PLAY_SA_JSON = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
       const PACKAGE_NAME = 'com.sonanie.guide';
 
-      // Play Console API: 내부 테스트 트랙에 테스터 등록
+      // Play Console API: 내부 테스트 트랙에 테스터 등록 (직접 HTTP 호출)
       if (PLAY_SA_JSON) {
         try {
           const { google } = await import('googleapis');
@@ -774,18 +774,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
             credentials: JSON.parse(PLAY_SA_JSON),
             scopes: ['https://www.googleapis.com/auth/androidpublisher']
           });
-          const androidpublisher = google.androidpublisher({ version: 'v3', auth });
-          const current = await androidpublisher.testers.get({ packageName: PACKAGE_NAME, track: 'internal' });
-          const existingTesters: string[] = (current.data.testers as string[]) || [];
-          if (!existingTesters.includes(email)) {
-            await androidpublisher.testers.patch({
-              packageName: PACKAGE_NAME,
-              track: 'internal',
-              requestBody: { testers: [...existingTesters, email] }
-            });
-            console.log(`[Beta] Play Console 등록 완료: ${email}`);
+          const accessToken = await auth.getAccessToken();
+          const TESTERS_URL = `https://www.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/testers/alpha`;
+
+          const getRes = await fetch(TESTERS_URL, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          const getBody: any = await getRes.json();
+          if (!getRes.ok) {
+            console.error('[Beta] Play Console GET 오류:', getRes.status, JSON.stringify(getBody).substring(0, 200));
           } else {
-            console.log(`[Beta] 이미 Play Console에 등록됨: ${email}`);
+            const existingTesters: string[] = getBody.testers || [];
+            if (!existingTesters.includes(email)) {
+              const patchRes = await fetch(TESTERS_URL, {
+                method: 'PATCH',
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ testers: [...existingTesters, email] })
+              });
+              const patchBody: any = await patchRes.json();
+              if (patchRes.ok) {
+                console.log(`[Beta] Play Console 등록 완료: ${email}`);
+              } else {
+                console.error('[Beta] Play Console PATCH 오류:', patchRes.status, JSON.stringify(patchBody).substring(0, 200));
+              }
+            } else {
+              console.log(`[Beta] 이미 Play Console에 등록됨: ${email}`);
+            }
           }
         } catch (playErr: any) {
           console.error('[Beta] Play Console API 오류:', playErr.message);
