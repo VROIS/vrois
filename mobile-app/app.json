@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.sonanie.guide",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"

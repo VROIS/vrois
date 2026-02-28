@@ -1,10 +1,5 @@
-node_modules
-store-assets
+node_modules/
+.git/
 *.log
-*.md
-.expo-shared
-.expo
-keystore.b64
-package-lock.json
 *.aab
 *.apk
