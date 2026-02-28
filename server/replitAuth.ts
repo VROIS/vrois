@@ -9,7 +9,9 @@ import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import { creditService } from "./creditService";
 
-// REPLIT_DOMAINS check moved inside setupAuth to avoid crash at module load time
+if (!process.env.REPLIT_DOMAINS) {
+  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+}
 
 const getOidcConfig = memoize(
   async () => {
@@ -74,10 +76,6 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
-  if (!process.env.REPLIT_DOMAINS) {
-    throw new Error("Environment variable REPLIT_DOMAINS not provided");
-  }
-
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
