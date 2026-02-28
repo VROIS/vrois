@@ -728,10 +728,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth middleware
-  await setupAuth(app);
-  await setupGoogleAuth(app);
-  await setupKakaoAuth(app);
+  // Auth middleware — wrapped in try-catch so startup doesn't hang on network/env issues
+  try {
+    const authTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('setupAuth timeout (30s)')), 30000)
+    );
+    await Promise.race([setupAuth(app), authTimeout]);
+    console.log('[startup] Replit auth setup complete');
+  } catch (err) {
+    console.error('[startup] Replit auth setup failed (non-fatal):', err);
+  }
+
+  try {
+    await setupGoogleAuth(app);
+    console.log('[startup] Google auth setup complete');
+  } catch (err) {
+    console.error('[startup] Google auth setup failed (non-fatal):', err);
+  }
+
+  try {
+    await setupKakaoAuth(app);
+    console.log('[startup] Kakao auth setup complete');
+  } catch (err) {
+    console.error('[startup] Kakao auth setup failed (non-fatal):', err);
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // 📱 Beta Tester Registration
