@@ -51,6 +51,18 @@
             gap: 12px;
             padding: 10px 0;
         }
+        .benefit-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: #1a73e8;
+            margin-top: 1px;
+        }
+        .screen-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+        }
         .lang-btn {
             padding: 4px 12px;
             border-radius: 20px;
@@ -86,25 +98,36 @@
         </div>
 
         <div class="text-center mb-6">
-            <div class="text-5xl mb-3">🗺️</div>
+            <svg class="screen-icon text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+            </svg>
             <h1 class="text-2xl font-bold text-gray-800 mb-1" id="txt-title"></h1>
             <p class="text-gray-500 text-sm" id="txt-subtitle"></p>
         </div>
 
         <div id="screen-landing">
+            <h2 class="text-2xl font-bold text-center text-blue-700 mb-4" id="txt-headline"></h2>
+
             <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6">
                 <p class="font-bold text-blue-800 text-sm mb-3" id="txt-invite-title"></p>
                 <div class="space-y-1">
                     <div class="benefit-item">
-                        <span class="text-lg">🎁</span>
+                        <svg class="benefit-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/>
+                        </svg>
                         <p class="text-gray-700 text-sm" id="txt-benefit1"></p>
                     </div>
                     <div class="benefit-item">
-                        <span class="text-lg">📱</span>
+                        <svg class="benefit-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/>
+                        </svg>
                         <p class="text-gray-700 text-sm" id="txt-benefit2"></p>
                     </div>
                     <div class="benefit-item">
-                        <span class="text-lg">📅</span>
+                        <svg class="benefit-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+                        </svg>
                         <p class="text-gray-700 text-sm" id="txt-benefit3"></p>
                     </div>
                 </div>
@@ -145,7 +168,9 @@
 
         <div id="screen-success" class="hidden">
             <div class="text-center mb-6">
-                <div class="text-5xl mb-3">🎉</div>
+                <svg class="screen-icon text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
                 <h2 class="text-xl font-bold text-gray-800 mb-1" id="txt-success-title"></h2>
             </div>
 
@@ -180,7 +205,9 @@
 
         <div id="screen-already" class="hidden">
             <div class="text-center mb-6">
-                <div class="text-4xl mb-3">✅</div>
+                <svg class="screen-icon text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"/>
+                </svg>
                 <p class="font-bold text-gray-800 mb-2" id="txt-already-title"></p>
                 <p class="text-gray-500 text-sm mb-4" id="txt-already-desc"></p>
             </div>
@@ -204,7 +231,9 @@
         </div>
 
         <div id="screen-error" class="hidden text-center py-6">
-            <div class="text-4xl mb-3">⚠️</div>
+            <svg class="screen-icon text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+            </svg>
             <p class="font-bold text-gray-800 mb-2" id="txt-error-title"></p>
             <p class="text-gray-500 text-sm mb-6" id="txt-error-desc"></p>
             <button onclick="showScreen('landing')"
@@ -220,30 +249,30 @@
             ko: {
                 title: '손안의 가이드',
                 subtitle: 'AI가 만들어주는 나만의 여행 가이드',
-                inviteTitle: '곧 Google Play Store에 정식 출시됩니다! 1분만 도와주세요!!!',
+                headline: '1분만 도와주세요!',
+                inviteTitle: '곧 Google Play Store에 정식 출시됩니다!',
                 benefit1: '무료 100 크레딧 즉시 지급 — 지금 바로 웹에서 사용 가능',
                 benefit2: '구글 그룹 가입 후 Android 비공개 테스트 앱 먼저 체험',
                 benefit3: '앱 설치 후 14일간 유지해주시면 정식 출시에 큰 도움이 됩니다',
-                androidOnly: '',
                 googleBtn: '안드로이드폰으로 시작하기',
                 or: '또는',
                 webBtn: '아이폰으로 시작하기',
                 terms: '로그인 시 위치정보, 사진 정보 사용에 동의합니다',
                 processing: '등록 중...',
                 successTitle: '등록 완료!',
-                creditGranted: '🎁 100 크레딧이 지급되었습니다',
+                creditGranted: '100 크레딧이 지급되었습니다',
                 creditDesc: '앱 정식 출시 전에도 지금 바로 웹에서 AI 여행가이드를 사용하실 수 있습니다!',
-                stepsTitle: '📋 아래 순서대로 진행해주세요 (Android 전용)',
+                stepsTitle: '아래 순서대로 진행해주세요 (Android 전용)',
                 step1: '1단계: 아래 파란 버튼 클릭 → 구글 그룹에 가입',
                 step2: '2단계: 그룹 가입 완료 후 초록 버튼 클릭 → 앱 설치',
                 groupBtn: '1단계: 구글 그룹 가입하기',
                 installBtn: '2단계: 비공개 테스트 앱 설치하기 (Android)',
-                webStartBtn: '🌐 지금 웹에서 시작하기',
+                webStartBtn: '지금 웹에서 시작하기',
                 alreadyTitle: '이미 등록되어 있습니다',
                 alreadyDesc: '아래 순서대로 그룹 가입 후 앱을 설치하세요',
                 alreadyGroupBtn: '1단계: 구글 그룹 가입하기',
                 alreadyInstallBtn: '2단계: 비공개 테스트 앱 설치하기 (Android)',
-                alreadyWebBtn: '🌐 웹에서 시작하기',
+                alreadyWebBtn: '웹에서 시작하기',
                 errorTitle: '오류가 발생했습니다',
                 errorDesc: '잠시 후 다시 시도해주세요',
                 retryBtn: '다시 시도',
@@ -251,30 +280,30 @@
             en: {
                 title: 'My Hand Guide',
                 subtitle: 'AI-powered personalized travel guide',
-                inviteTitle: 'Coming soon to Google Play Store! Please help us for 1 minute!!!',
+                headline: 'Please help us for 1 minute!',
+                inviteTitle: 'Coming soon to Google Play Store!',
                 benefit1: '100 free credits instantly — usable right now on the web',
                 benefit2: 'Join Google Group then get early access to the Android beta app',
                 benefit3: 'Please keep the app for 14 days after install — it helps a lot!',
-                androidOnly: '',
                 googleBtn: 'Start on Android',
                 or: 'or',
                 webBtn: 'Start on iPhone',
                 terms: 'By signing in, you agree to location and photo data usage',
                 processing: 'Registering...',
                 successTitle: 'You\'re in!',
-                creditGranted: '🎁 100 credits have been added to your account',
+                creditGranted: '100 credits have been added to your account',
                 creditDesc: 'You can start using the AI travel guide on the web right now — no need to wait for the official launch!',
-                stepsTitle: '📋 Please follow these steps (Android only)',
+                stepsTitle: 'Please follow these steps (Android only)',
                 step1: 'Step 1: Click the blue button below → Join the Google Group',
                 step2: 'Step 2: After joining, click the green button → Install the app',
                 groupBtn: 'Step 1: Join Google Group',
                 installBtn: 'Step 2: Install Beta App (Android)',
-                webStartBtn: '🌐 Start on Web Now',
+                webStartBtn: 'Start on Web Now',
                 alreadyTitle: 'Already registered!',
                 alreadyDesc: 'Join the group first, then install the app below',
                 alreadyGroupBtn: 'Step 1: Join Google Group',
                 alreadyInstallBtn: 'Step 2: Install Beta App (Android)',
-                alreadyWebBtn: '🌐 Start on Web',
+                alreadyWebBtn: 'Start on Web',
                 errorTitle: 'Something went wrong',
                 errorDesc: 'Please try again in a moment',
                 retryBtn: 'Try again',
@@ -293,6 +322,7 @@
             const s = STRINGS[lang];
             document.getElementById('txt-title').textContent = s.title;
             document.getElementById('txt-subtitle').textContent = s.subtitle;
+            document.getElementById('txt-headline').textContent = s.headline;
             document.getElementById('txt-invite-title').textContent = s.inviteTitle;
             document.getElementById('txt-benefit1').textContent = s.benefit1;
             document.getElementById('txt-benefit2').textContent = s.benefit2;
