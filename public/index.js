@@ -4019,7 +4019,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (synth.speaking) {
+        if (isSpeaking) {
             if (isPaused) {
                 synth.resume();
                 isPaused = false;
