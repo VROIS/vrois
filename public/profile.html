@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>프로필 - 손안에 가이드</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234285F4'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/></svg>">
-    <meta name="theme-color" content="#4285F4"/>
-    
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234285F4'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/></svg>">
+    <meta name="theme-color" content="#4285F4" />
+
     <!-- 🌐 2025-12-24: 구글 번역 쿠키 사전 설정 -->
     <script>
-        (function() {
+        (function () {
             var storedLang = null;
-            try { storedLang = localStorage.getItem('appLanguage'); } catch(e) {}
+            try { storedLang = localStorage.getItem('appLanguage'); } catch (e) { }
             var lang = storedLang || 'ko';
             if (lang && lang !== 'ko' && /^[a-z]{2}(-[A-Z]{2})?$/.test(lang)) {
                 var domain = window.location.hostname;
@@ -21,24 +23,28 @@
             }
         })();
     </script>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://hangeul.pstatic.net">
     <link rel="stylesheet" href="https://hangeul.pstatic.net/maruburi/maruburi.css">
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         :root {
             --gemini-blue: #4285F4;
         }
-        html, body { 
-            touch-action: manipulation; 
-            -webkit-tap-highlight-color: transparent; 
+
+        html,
+        body {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
             min-height: 100vh;
             background-color: #FFFEFA;
             font-family: 'MaruBuri', 'Pretendard', sans-serif;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
+
         .card {
             background: white;
             border-radius: 1rem;
@@ -46,6 +52,7 @@
             padding: 1.25rem;
             margin-bottom: 1rem;
         }
+
         .plan-card {
             background: #f9fafb;
             border-radius: 1rem;
@@ -54,13 +61,21 @@
             transition: all 0.2s;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
+
         .plan-card.active {
             background: linear-gradient(135deg, #4285F4 0%, #3367d6 100%);
             color: white;
             transform: scale(1.02);
         }
-        .plan-card.active .plan-price { color: white; }
-        .plan-card.active .plan-benefit { color: rgba(255,255,255,0.9); }
+
+        .plan-card.active .plan-price {
+            color: white;
+        }
+
+        .plan-card.active .plan-benefit {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
         .item-row {
             display: flex;
             align-items: center;
@@ -69,7 +84,11 @@
             border-radius: 0.75rem;
             margin-bottom: 0.5rem;
         }
-        .item-row:last-child { margin-bottom: 0; }
+
+        .item-row:last-child {
+            margin-bottom: 0;
+        }
+
         .transaction-row {
             display: flex;
             justify-content: space-between;
@@ -77,9 +96,21 @@
             padding: 0.75rem 0;
             border-bottom: 1px solid #f3f4f6;
         }
-        .transaction-row:last-child { border-bottom: none; }
-        .credit-plus { color: #10b981; font-weight: 700; }
-        .credit-minus { color: #ef4444; font-weight: 700; }
+
+        .transaction-row:last-child {
+            border-bottom: none;
+        }
+
+        .credit-plus {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .credit-minus {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
         .toast-notification {
             position: fixed;
             bottom: 100px;
@@ -96,31 +127,52 @@
             max-width: 90%;
             text-align: center;
         }
+
         .toast-notification.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
             border-radius: 0.5rem;
         }
+
         @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
-        .hidden { display: none !important; }
+
+        .hidden {
+            display: none !important;
+        }
+
         .delete-btn {
             opacity: 0;
             transition: opacity 0.2s;
         }
-        .item-row:hover .delete-btn { opacity: 1; }
-        @media (hover: none) {
-            .delete-btn { opacity: 0.6; }
+
+        .item-row:hover .delete-btn {
+            opacity: 1;
         }
-        .text-gemini-blue { color: var(--gemini-blue); }
-        
+
+        @media (hover: none) {
+            .delete-btn {
+                opacity: 0.6;
+            }
+        }
+
+        .text-gemini-blue {
+            color: var(--gemini-blue);
+        }
+
         /* ⚠️ 상세페이지 컴포넌트 스타일 (guideDetailPage.js 복붙 - 2025-12-11) */
         #profileDetailPage {
             position: fixed;
@@ -132,6 +184,7 @@
             display: flex;
             flex-direction: column;
         }
+
         #profileDetailPage .full-screen-bg {
             position: fixed;
             top: 0;
@@ -141,6 +194,7 @@
             object-fit: cover;
             z-index: 1;
         }
+
         #profileDetailPage .header-safe-area {
             position: relative;
             width: 100%;
@@ -152,6 +206,7 @@
             justify-content: center;
             padding: 0 1rem;
         }
+
         #profileDetailPage .info-fixed-area {
             position: relative;
             width: 100%;
@@ -159,6 +214,7 @@
             z-index: 25;
             padding: 0 1rem 0.5rem 1rem;
         }
+
         #profileDetailPage .content-safe-area {
             position: relative;
             flex: 1;
@@ -167,15 +223,18 @@
             background: transparent;
             z-index: 20;
         }
+
         #profileDetailPage .text-content {
             padding: 1.5rem;
             line-height: 1.8;
             word-break: keep-all;
             overflow-wrap: break-word;
         }
+
         #profileDetailPage .readable-on-image {
             color: white;
         }
+
         #profileDetailPage .footer-safe-area {
             position: relative;
             width: 100%;
@@ -189,40 +248,62 @@
             padding: 0 1rem;
             background: transparent;
         }
+
         #profileDetailPage .interactive-btn {
             transition: transform 0.1s ease, background-color 0.2s ease;
         }
+
         #profileDetailPage .interactive-btn:active {
             transform: scale(0.95);
         }
+
         /* 구글 번역 스피너 완전 숨김 */
-        .goog-te-spinner-pos { display: none !important; }
-        .goog-te-spinner { display: none !important; }
-        .goog-te-spinner-animation { display: none !important; }
+        .goog-te-spinner-pos {
+            display: none !important;
+        }
+
+        .goog-te-spinner {
+            display: none !important;
+        }
+
+        .goog-te-spinner-animation {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body>
     <div id="toastContainer"></div>
 
-    <div id="authModal" class="fixed inset-0 z-[9999] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center hidden pointer-events-none">
-        <div id="authModalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transition-transform transform pointer-events-auto">
+    <div id="authModal"
+        class="fixed inset-0 z-[9999] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center hidden pointer-events-none">
+        <div id="authModalContent"
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transition-transform transform pointer-events-auto">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-gray-800">로그인</h2>
-                <button id="closeAuthModalBtn" data-testid="button-close-auth-modal" class="p-2 text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                <button id="closeAuthModalBtn" data-testid="button-close-auth-modal"
+                    class="p-2 text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
             </div>
             <div class="p-6 space-y-4">
-                <button id="kakaoLoginBtn" data-testid="button-kakao-login" class="w-full bg-[#FEE500] hover:bg-[#FDD835] text-gray-800 font-bold py-4 px-6 rounded-xl transition duration-300 shadow-lg flex items-center justify-center gap-3">
+                <button id="kakaoLoginBtn" data-testid="button-kakao-login"
+                    class="w-full bg-[#FEE500] hover:bg-[#FDD835] text-gray-800 font-bold py-4 px-6 rounded-xl transition duration-300 shadow-lg flex items-center justify-center gap-3">
                     <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.8 6.7-.2.7-.6 2.1-.7 2.5 0 .3.1.6.4.7.2.1.5 0 .7-.1.3-.2 3.5-2.3 4.1-2.7.6.1 1.1.1 1.7.1 5.5 0 10-3.6 10-8S17.5 3 12 3z"/>
+                        <path
+                            d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.8 6.7-.2.7-.6 2.1-.7 2.5 0 .3.1.6.4.7.2.1.5 0 .7-.1.3-.2 3.5-2.3 4.1-2.7.6.1 1.1.1 1.7.1 5.5 0 10-3.6 10-8S17.5 3 12 3z" />
                     </svg>
                     <span>Kakao로 로그인</span>
                 </button>
-                <button id="googleLoginBtn" data-testid="button-google-login" class="w-full bg-white border-2 border-gray-300 text-gray-800 font-bold py-4 px-6 rounded-xl hover:bg-gray-50 transition duration-300 shadow-lg flex items-center justify-center gap-3">
+                <button id="googleLoginBtn" data-testid="button-google-login"
+                    class="w-full bg-white border-2 border-gray-300 text-gray-800 font-bold py-4 px-6 rounded-xl hover:bg-gray-50 transition duration-300 shadow-lg flex items-center justify-center gap-3">
                     <svg class="w-6 h-6" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        <path fill="#4285F4"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
                     <span>Google로 로그인</span>
                 </button>
@@ -236,11 +317,15 @@
     </div>
 
     <!-- 💰 캐시백 신청 모달 -->
-    <div id="cashbackModal" class="fixed inset-0 z-[9999] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center hidden pointer-events-none">
-        <div id="cashbackModalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transition-transform transform pointer-events-auto">
+    <div id="cashbackModal"
+        class="fixed inset-0 z-[9999] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center hidden pointer-events-none">
+        <div id="cashbackModalContent"
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transition-transform transform pointer-events-auto">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-gray-800">💰 캐시백 신청</h2>
-                <button id="closeCashbackModalBtn" data-testid="button-close-cashback-modal" onclick="closeCashbackModal()" class="p-2 text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                <button id="closeCashbackModalBtn" data-testid="button-close-cashback-modal"
+                    onclick="closeCashbackModal()"
+                    class="p-2 text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
             </div>
             <div class="p-6 space-y-4">
                 <!-- 현재 크레딧 상태 -->
@@ -248,39 +333,46 @@
                     <p class="text-sm text-gray-600">현재 보유 크레딧</p>
                     <p class="text-3xl font-bold text-blue-600"><span id="cashbackCredits">0</span></p>
                 </div>
-                
+
                 <!-- 캐시백 조건 안내 -->
                 <div id="cashbackNotEligible" class="bg-amber-50 rounded-xl p-4 hidden">
                     <div class="flex items-center gap-2 text-amber-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                         </svg>
                         <span class="font-medium">1000 크레딧 이상 보유 시 신청 가능합니다</span>
                     </div>
                 </div>
-                
+
                 <!-- 캐시백 신청 폼 -->
                 <div id="cashbackForm" class="hidden space-y-4">
                     <div class="bg-green-50 rounded-xl p-4">
                         <div class="flex items-center gap-2 text-green-700 mb-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span class="font-bold">캐시백 가능!</span>
                         </div>
-                        <p class="text-sm text-gray-600">1000 크레딧 → <span class="font-bold text-green-700">100 EUR 현금 환급</span></p>
+                        <p class="text-sm text-gray-600">1000 크레딧 → <span class="font-bold text-green-700">100 EUR 현금
+                                환급</span></p>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">결제 수단 (카카오페이 or 계좌번호)</label>
-                        <input type="text" id="cashbackPaymentMethod" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="예: 카카오페이 01012345678" data-testid="input-payment-method">
+                        <input type="text" id="cashbackPaymentMethod"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="예: 카카오페이 01012345678" data-testid="input-payment-method">
                     </div>
-                    
-                    <button id="requestCashbackBtn" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 px-6 rounded-xl hover:from-green-600 hover:to-emerald-700 transition shadow-lg" data-testid="button-request-cashback">
+
+                    <button id="requestCashbackBtn"
+                        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 px-6 rounded-xl hover:from-green-600 hover:to-emerald-700 transition shadow-lg"
+                        data-testid="button-request-cashback">
                         캐시백 신청하기
                     </button>
                 </div>
-                
+
                 <!-- 캐시백 내역 -->
                 <div id="cashbackHistory" class="hidden">
                     <h3 class="text-sm font-bold text-gray-700 mb-2">신청 내역</h3>
@@ -297,24 +389,34 @@
     <div id="profileDetailPage" class="hidden">
         <img id="profileDetailImage" src="" alt="상세페이지 이미지" class="full-screen-bg">
         <header class="header-safe-area">
-            <button id="profileDetailBackBtn" class="w-12 h-12 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl absolute top-1/2 right-4 -translate-y-1/2" style="z-index: 10001; pointer-events: auto;" aria-label="닫기" data-testid="button-close-detail">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <button id="profileDetailBackBtn"
+                class="w-12 h-12 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl absolute top-1/2 right-4 -translate-y-1/2"
+                style="z-index: 10001; pointer-events: auto;" aria-label="닫기" data-testid="button-close-detail">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </header>
         <!-- 📍🎤 정보 표시 영역 -->
         <div class="info-fixed-area">
-            <div id="profileDetailLocationInfo" class="hidden flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gemini-blue flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+            <div id="profileDetailLocationInfo"
+                class="hidden flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gemini-blue flex-shrink-0"
+                    viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
+                        clip-rule="evenodd" />
                 </svg>
                 <span id="profileDetailLocationName" class="text-base font-semibold text-gray-800"></span>
             </div>
-            <div id="profileDetailVoiceQueryInfo" class="hidden flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md mt-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gemini-blue flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <div id="profileDetailVoiceQueryInfo"
+                class="hidden flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gemini-blue flex-shrink-0"
+                    viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z" />
-                    <path d="M6 10.5a.75.75 0 01.75.75v1.5a5.25 5.25 0 1010.5 0v-1.5a.75.75 0 011.5 0v1.5a6.751 6.751 0 01-6 6.709v2.291h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.291a6.751 6.751 0 01-6-6.709v-1.5A.75.75 0 016 10.5z" />
+                    <path
+                        d="M6 10.5a.75.75 0 01.75.75v1.5a5.25 5.25 0 1010.5 0v-1.5a.75.75 0 011.5 0v1.5a6.751 6.751 0 01-6 6.709v2.291h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.291a6.751 6.751 0 01-6-6.709v-1.5A.75.75 0 016 10.5z" />
                 </svg>
                 <span id="profileDetailVoiceQueryText" class="text-base font-semibold text-gray-800"></span>
             </div>
@@ -325,18 +427,32 @@
             </div>
         </div>
         <footer class="footer-safe-area">
-            <button id="profileDetailAudioBtn" aria-label="오디오 재생" class="w-16 h-16 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl" data-testid="button-audio-toggle">
+            <button id="profileDetailAudioBtn" aria-label="오디오 재생"
+                class="w-16 h-16 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl"
+                data-testid="button-audio-toggle">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.648c1.295.748 1.295 2.538 0 3.286L7.279 20.99c-1.25.717-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.648c1.295.748 1.295 2.538 0 3.286L7.279 20.99c-1.25.717-2.779-.217-2.779-1.643V5.653z"
+                        clip-rule="evenodd" />
                 </svg>
             </button>
-            <button id="profileDetailTextToggleBtn" aria-label="해설 읽기" class="w-16 h-16 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl" data-testid="button-text-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <button id="profileDetailTextToggleBtn" aria-label="해설 읽기"
+                class="w-16 h-16 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl"
+                data-testid="button-text-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
             </button>
-            <button id="profileDetailSaveBtn" aria-label="보관함에 저장" class="w-16 h-16 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl" data-testid="button-save-local">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+            <button id="profileDetailSaveBtn" aria-label="보관함에 저장"
+                class="w-16 h-16 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-gemini-blue interactive-btn shadow-2xl"
+                data-testid="button-save-local">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
             </button>
         </footer>
     </div>
@@ -345,10 +461,14 @@
         <header class="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-200/80">
             <div class="max-w-lg mx-auto px-4 py-3 flex items-center">
                 <div class="w-10"></div>
-                <h1 class="flex-1 text-center text-lg font-bold text-gray-900" style="font-family: 'Pretendard', sans-serif;">프로필</h1>
-                <button id="backBtn" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition" data-testid="button-back">
-                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                <h1 class="flex-1 text-center text-lg font-bold text-gray-900"
+                    style="font-family: 'Pretendard', sans-serif;">프로필</h1>
+                <button id="backBtn"
+                    class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                    data-testid="button-back">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -364,11 +484,14 @@
                     </div>
                 </div>
                 <div id="profileContent" class="hidden">
-                    <div id="guestView" class="hidden cursor-pointer hover:bg-gray-50 transition rounded-xl" onclick="showAuthModal()" data-testid="button-guest-login">
+                    <div id="guestView" class="hidden cursor-pointer hover:bg-gray-50 transition rounded-xl"
+                        onclick="showAuthModal()" data-testid="button-guest-login">
                         <div class="flex items-center gap-4 py-2">
                             <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
-                                <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                                <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                 </svg>
                             </div>
                             <div class="flex-1">
@@ -376,21 +499,25 @@
                                 <p class="text-sm text-blue-600">탭하여 로그인</p>
                             </div>
                             <div class="text-right">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                 </svg>
                             </div>
                         </div>
                     </div>
                     <div id="userView" class="hidden">
                         <div class="flex items-center gap-4">
-                            <img id="profileImage" src="" alt="프로필" class="w-14 h-14 rounded-full object-cover border-2 border-gray-100">
+                            <img id="profileImage" src="" alt="프로필"
+                                class="w-14 h-14 rounded-full object-cover border-2 border-gray-100">
                             <div class="flex-1">
                                 <p id="userName" class="font-bold text-gray-900" data-testid="text-username"></p>
                                 <p id="userEmail" class="text-sm text-gray-500" data-testid="text-email"></p>
                             </div>
                             <div class="text-right">
-                                <p class="text-2xl font-bold text-blue-600" id="creditsAmount" data-testid="text-credits">0</p>
+                                <p class="text-2xl font-bold text-blue-600" id="creditsAmount"
+                                    data-testid="text-credits">0</p>
                                 <p class="text-xs text-gray-500">크레딧</p>
                             </div>
                         </div>
@@ -399,15 +526,21 @@
             </section>
 
             <section class="card space-y-3">
-                <button id="chargeBtn" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition shadow-lg" data-testid="button-charge">
-                    <span id="chargeBtnText" class="text-base whitespace-nowrap notranslate" translate="no">10 EUR 충전하기 (약 ₩15,000)</span>
+                <button id="chargeBtn"
+                    class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition shadow-lg"
+                    data-testid="button-charge">
+                    <span id="chargeBtnText" class="text-base whitespace-nowrap notranslate" translate="no">10 EUR 충전하기
+                        (약 ₩15,000)</span>
                 </button>
-                
+
                 <!-- 💰 캐시백 신청 버튼 (1000+ 크레딧일 때만 표시) -->
-                <button id="cashbackBtn" class="hidden w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-4 rounded-xl hover:from-green-600 hover:to-emerald-700 transition shadow-md" data-testid="button-cashback" onclick="openCashbackModal()">
+                <button id="cashbackBtn"
+                    class="hidden w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-4 rounded-xl hover:from-green-600 hover:to-emerald-700 transition shadow-md"
+                    data-testid="button-cashback" onclick="openCashbackModal()">
                     <div class="flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
                         </svg>
                         <span>캐시백 신청 (1000 크레딧 → 100 EUR)</span>
                     </div>
@@ -417,8 +550,10 @@
             <section id="myPagesSection" class="card">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                         </svg>
                         <h2 class="font-bold text-gray-900">내 페이지</h2>
                     </div>
@@ -436,8 +571,10 @@
 
             <section id="transactionsSection" class="card">
                 <div class="flex items-center gap-2 mb-3">
-                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
                     </svg>
                     <h2 class="font-bold text-gray-900">크레딧 내역</h2>
                 </div>
@@ -452,9 +589,11 @@
 
             <section id="pricingSection" class="card">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
                     </svg>
                     <h2 class="font-bold text-gray-900">요금제</h2>
                 </div>
@@ -481,7 +620,8 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-bold plan-price text-blue-600">140 크레딧</p>
-                                <p id="standardPrice" class="text-xs text-gray-500 notranslate" translate="no">10 EUR</p>
+                                <p id="standardPrice" class="text-xs text-gray-500 notranslate" translate="no">10 EUR
+                                </p>
                             </div>
                         </div>
                         <div class="mt-3 pt-3 border-t border-gray-200 text-left">
@@ -500,7 +640,8 @@
                         </div>
                         <div class="mt-3 pt-3 border-t border-gray-200 text-left flex items-center justify-between">
                             <p class="text-sm plan-benefit text-gray-600">대용량 크레딧 + 맞춤 기능</p>
-                            <button id="contactProBtn" class="text-sm text-blue-600 font-medium hover:underline" data-testid="button-contact-pro">문의</button>
+                            <button id="contactProBtn" class="text-sm text-blue-600 font-medium hover:underline"
+                                data-testid="button-contact-pro">문의</button>
                         </div>
                     </div>
                 </div>
@@ -515,7 +656,7 @@
 
     <script>
         const toastContainer = document.getElementById('toastContainer');
-        
+
         function showToast(message, duration = 3000) {
             const toast = document.createElement('div');
             toast.className = 'toast-notification';
@@ -539,7 +680,7 @@
 
         async function loadProfile() {
             const adminMode = isAdmin();
-            
+
             try {
                 const response = await fetch('/api/profile', { credentials: 'include' });
                 const data = await response.json();
@@ -552,11 +693,11 @@
                     document.getElementById('creditsAmount').textContent = '∞';
                     document.getElementById('chargeBtn').classList.add('hidden');
                     document.getElementById('pricingSection').classList.add('hidden');
-                    
+
                     // 관리자 배지 추가 (userName 옆에)
                     const userNameEl = document.getElementById('userName');
                     if (userNameEl && !document.getElementById('adminBadge')) {
-                        userNameEl.insertAdjacentHTML('afterend', 
+                        userNameEl.insertAdjacentHTML('afterend',
                             '<span id="adminBadge" class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">관리자</span>');
                     }
                 }
@@ -564,18 +705,18 @@
                 if (data.authenticated && data.user) {
                     document.getElementById('guestView').classList.add('hidden');
                     document.getElementById('userView').classList.remove('hidden');
-                    
+
                     const img = document.getElementById('profileImage');
                     if (data.user.profileImageUrl) {
                         img.src = data.user.profileImageUrl;
                     } else {
                         img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239ca3af"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
                     }
-                    
-                    document.getElementById('userName').textContent = 
+
+                    document.getElementById('userName').textContent =
                         [data.user.firstName, data.user.lastName].filter(Boolean).join(' ') || '사용자';
                     document.getElementById('userEmail').textContent = data.user.email || '';
-                    
+
                     // 관리자가 아닐 때만 크레딧 숫자 표시
                     if (!adminMode) {
                         document.getElementById('creditsAmount').textContent = data.credits || 0;
@@ -608,7 +749,7 @@
 
                 const detailContainer = document.getElementById('detailPagesContainer');
                 const shareContainer = document.getElementById('sharePagesContainer');
-                
+
                 let hasContent = false;
 
                 if (data.detailPages && data.detailPages.length > 0) {
@@ -682,13 +823,13 @@
 
         async function deletePage(id, type) {
             if (!confirm('정말 삭제하시겠습니까?')) return;
-            
+
             try {
                 const response = await fetch(`/api/profile/pages/${type}/${id}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });
-                
+
                 if (response.ok) {
                     document.querySelector(`[data-id="${id}"][data-type="${type}"]`)?.remove();
                     showToast('삭제되었습니다.');
@@ -738,7 +879,7 @@
 
         let cachedPriceText = '';
         let cachedBtnText = '';
-        
+
         async function loadPricing() {
             try {
                 const response = await fetch('/api/profile/exchange-rate');
@@ -746,9 +887,9 @@
 
                 if (data.prices) {
                     const userLang = localStorage.getItem('appLanguage') || 'ko';
-                    
+
                     // 언어별 통화 표시
-                    switch(userLang) {
+                    switch (userLang) {
                         case 'ko':
                             const krwFormatted = new Intl.NumberFormat('ko-KR').format(data.prices.KRW);
                             cachedPriceText = `10 EUR (약 ₩${krwFormatted})`;
@@ -783,9 +924,9 @@
                             cachedPriceText = `10 EUR (약 ₩${defaultKrw})`;
                             cachedBtnText = `10 EUR 충전하기 (약 ₩${defaultKrw})`;
                     }
-                    
+
                     applyPriceText();
-                    
+
                     // Google Translate가 텍스트를 덮어쓰면 다시 복원
                     setTimeout(applyPriceText, 500);
                     setTimeout(applyPriceText, 1500);
@@ -795,36 +936,36 @@
                 console.error('Pricing load error:', error);
             }
         }
-        
+
         let isApplyingPrice = false;
-        
+
         function applyPriceText() {
             if (isApplyingPrice || !cachedPriceText || !cachedBtnText) return;
-            
+
             isApplyingPrice = true;
             const priceEl = document.getElementById('standardPrice');
             const btnEl = document.getElementById('chargeBtnText');
-            
+
             if (priceEl && priceEl.textContent !== cachedPriceText) {
                 priceEl.textContent = cachedPriceText;
             }
             if (btnEl && btnEl.textContent !== cachedBtnText) {
                 btnEl.textContent = cachedBtnText;
             }
-            
+
             setTimeout(() => { isApplyingPrice = false; }, 50);
         }
-        
+
         // MutationObserver로 Google Translate 변경 감지 및 복원
         const priceObserver = new MutationObserver(() => {
             if (!isApplyingPrice) applyPriceText();
         });
-        
+
         // 페이지 로드 후 Observer 시작
         document.addEventListener('DOMContentLoaded', () => {
             const priceEl = document.getElementById('standardPrice');
             const btnEl = document.getElementById('chargeBtnText');
-            
+
             if (priceEl) {
                 priceObserver.observe(priceEl, { childList: true, characterData: true, subtree: true });
             }
@@ -921,11 +1062,11 @@
         // profile.html용: profileDetailPage 객체
         // _saveToLocal 수정: 저장만, 페이지 이동/닫기 없음
         // ═══════════════════════════════════════════════════════════════
-        
+
         const profileDetailPage = {
             // 🔒 중복 초기화 방지
             _isInitialized: false,
-            
+
             // 내부 상태
             _state: {
                 isTextVisible: true,
@@ -944,7 +1085,7 @@
                 savedVoiceLang: null,
                 savedVoiceName: null
             },
-            
+
             // 🔊 하드코딩 기본값 (오프라인 fallback)
             _defaultVoicePriorities: {
                 'ko-KR': { default: ['Microsoft Heami', 'Yuna'] },
@@ -957,14 +1098,14 @@
             },
 
             // 초기화 (중복 호출 방지)
-            init: function(options = {}) {
+            init: function (options = {}) {
                 // 🔒 중복 초기화 방지
                 if (this._isInitialized) {
                     console.log('[ProfileDetailPage] 이미 초기화됨, 스킵');
                     return;
                 }
                 this._isInitialized = true;
-                
+
                 const self = this;
                 this._state.synth = window.speechSynthesis;
                 this._state.onClose = options.onClose || null;
@@ -1007,15 +1148,15 @@
 
                 console.log('[ProfileDetailPage] Initialized');
             },
-            
+
             // 🔊 DB에서 음성 설정 로드
-            _loadVoiceConfigsFromDB: async function() {
+            _loadVoiceConfigsFromDB: async function () {
                 if (this._state.voiceConfigsCache) return this._state.voiceConfigsCache;
                 if (this._state.voiceConfigsLoading) {
                     await new Promise(resolve => setTimeout(resolve, 500));
                     return this._state.voiceConfigsCache || null;
                 }
-                
+
                 this._state.voiceConfigsLoading = true;
                 try {
                     const response = await fetch('/api/voice-configs');
@@ -1039,62 +1180,62 @@
                 this._state.voiceConfigsLoading = false;
                 return this._state.voiceConfigsCache;
             },
-            
+
             // 🔊 플랫폼 감지
-            _detectPlatform: function() {
+            _detectPlatform: function () {
                 const ua = navigator.userAgent;
                 if (/iPhone|iPad|iPod|Mac/.test(ua)) return 'ios';
                 if (/Android/.test(ua)) return 'android';
                 if (/Windows/.test(ua)) return 'windows';
                 return 'default';
             },
-            
+
             // 🔊 DB 기반 음성 우선순위 가져오기
-            _getVoicePriorityFromDB: function(langCode) {
+            _getVoicePriorityFromDB: function (langCode) {
                 const platform = this._detectPlatform();
-                
+
                 if (this._state.voiceConfigsCache && this._state.voiceConfigsCache[langCode]) {
                     const config = this._state.voiceConfigsCache[langCode][platform] || this._state.voiceConfigsCache[langCode]['default'];
                     if (config) {
                         return { priorities: config.priorities, excludeVoices: config.excludeVoices };
                     }
                 }
-                
+
                 const fallback = this._defaultVoicePriorities[langCode];
                 if (fallback) {
                     const priorities = fallback[platform] || fallback['default'] || fallback[Object.keys(fallback)[0]];
                     return { priorities, excludeVoices: [] };
                 }
-                
+
                 return { priorities: [], excludeVoices: [] };
             },
-            
+
             // 🌐 2025-12-24: 동적 콘텐츠 강제 재번역
             _retranslationPending: false,
-            
-            _retranslateNewContent: function() {
+
+            _retranslateNewContent: function () {
                 const self = this;
                 // 🌐 2025-12-24: userLang 체크 제거 - Google Translate 드롭다운 활성화 여부만 확인
                 return new Promise((resolve) => {
                     const selectElement = document.querySelector('.goog-te-combo');
-                    
+
                     if (!selectElement || !selectElement.value) {
                         console.log('[ProfileDetailPage Retranslate] Google Translate 드롭다운 비활성 - 스킵');
                         resolve();
                         return;
                     }
-                    
+
                     const currentLang = selectElement.value;
                     console.log('[ProfileDetailPage Retranslate] 🔄 강제 재번역 시작:', currentLang);
                     self._retranslationPending = true;
-                    
+
                     selectElement.value = '';
                     selectElement.dispatchEvent(new Event('change'));
-                    
+
                     setTimeout(() => {
                         selectElement.value = currentLang;
                         selectElement.dispatchEvent(new Event('change'));
-                        
+
                         setTimeout(() => {
                             console.log('[ProfileDetailPage Retranslate] ✅ 재번역 완료');
                             self._retranslationPending = false;
@@ -1106,40 +1247,40 @@
             },
 
             // 🌐 번역 완료 감지 (MutationObserver)
-            _initTranslationWatcher: function() {
+            _initTranslationWatcher: function () {
                 const self = this;
                 const userLang = localStorage.getItem('appLanguage') || 'ko';
-                
+
                 if (userLang === 'ko') {
                     this._state.translationComplete = true;
                     return;
                 }
-                
-                const hasTranslateClass = document.body.classList.contains('translated-ltr') || 
-                                          document.body.classList.contains('translated-rtl');
+
+                const hasTranslateClass = document.body.classList.contains('translated-ltr') ||
+                    document.body.classList.contains('translated-rtl');
                 if (hasTranslateClass) {
                     this._state.translationComplete = true;
                     return;
                 }
-                
+
                 this._state.translationComplete = false;
-                
-                this._state.translationObserver = new MutationObserver(function(mutations) {
-                    const hasTranslated = document.body.classList.contains('translated-ltr') || 
-                                          document.body.classList.contains('translated-rtl');
+
+                this._state.translationObserver = new MutationObserver(function (mutations) {
+                    const hasTranslated = document.body.classList.contains('translated-ltr') ||
+                        document.body.classList.contains('translated-rtl');
                     if (hasTranslated) {
                         self._state.translationComplete = true;
                         self._state.translationObserver.disconnect();
                         window.dispatchEvent(new CustomEvent('profileTranslationComplete'));
                     }
                 });
-                
-                this._state.translationObserver.observe(document.body, { 
-                    attributes: true, 
-                    attributeFilter: ['class'] 
+
+                this._state.translationObserver.observe(document.body, {
+                    attributes: true,
+                    attributeFilter: ['class']
                 });
-                
-                setTimeout(function() {
+
+                setTimeout(function () {
                     if (!self._state.translationComplete) {
                         self._state.translationComplete = true;
                         if (self._state.translationObserver) {
@@ -1151,67 +1292,67 @@
             },
 
             // 음성 목록 로드
-            _populateVoiceList: function() {
+            _populateVoiceList: function () {
                 this._state.voices = this._state.synth.getVoices();
             },
-            
+
             // 언어별 음성 선택
-            _getVoiceForLanguage: function(userLang) {
+            _getVoiceForLanguage: function (userLang) {
                 const langMap = {
                     'ko': 'ko-KR', 'en': 'en-US', 'ja': 'ja-JP', 'zh-CN': 'zh-CN',
                     'fr': 'fr-FR', 'de': 'de-DE', 'es': 'es-ES'
                 };
-                
+
                 const fullLang = langMap[userLang] || 'ko-KR';
                 const langCode = fullLang.substring(0, 2);
-                
+
                 const voiceConfig = this._getVoicePriorityFromDB(fullLang);
                 const priorities = voiceConfig.priorities;
                 const excludeVoices = voiceConfig.excludeVoices;
-                
+
                 const allVoices = this._state.voices;
                 let targetVoice = null;
-                
+
                 for (const voiceName of priorities) {
-                    targetVoice = allVoices.find(v => 
+                    targetVoice = allVoices.find(v =>
                         v.name.includes(voiceName) && !excludeVoices.some(ex => v.name.includes(ex))
                     );
                     if (targetVoice) break;
                 }
-                
+
                 if (!targetVoice) {
-                    targetVoice = allVoices.find(v => 
+                    targetVoice = allVoices.find(v =>
                         v.lang.replace('_', '-').startsWith(langCode) && !excludeVoices.some(ex => v.name.includes(ex))
                     );
                 }
-                
+
                 return targetVoice || allVoices[0];
             },
 
             // 페이지 열기 (guideId로 API 호출)
-            open: async function(guideId) {
+            open: async function (guideId) {
                 // 🔒 2025-12-12: 강제 초기화 - 이전 음성/데이터 완전 정리
                 if (this._state.synth) {
                     this._state.synth.cancel();
                 }
                 this._stopAudio();
-                
+
                 // 상태 초기화
                 this._state.currentGuideData = null;
                 this._state.savedVoiceLang = null;
                 this._state.savedVoiceName = null;
                 this._state.originalText = '';
                 this._state.currentUtterance = null;
-                
+
                 // 렌더 ID 증가 - 이전 콜백 무효화
                 this._state.renderId++;
                 const thisRenderId = this._state.renderId;
-                
+
                 console.log('[ProfileDetailPage] open() guideId:', guideId, 'renderId:', thisRenderId);
-                
+
                 try {
                     this._show();
-                    
+
                     if (this._els.description) {
                         this._els.description.textContent = '불러오는 중...';
                     }
@@ -1221,14 +1362,14 @@
 
                     const response = await fetch(`/api/guides/${guideId}`, { credentials: 'include' });
                     if (!response.ok) throw new Error('가이드를 불러올 수 없습니다.');
-                    
+
                     const guide = await response.json();
-                    
+
                     if (thisRenderId !== this._state.renderId) {
                         console.log('[ProfileDetailPage] 렌더 ID 불일치, 무시');
                         return;
                     }
-                    
+
                     this._state.currentGuideData = guide;
                     this._render(guide, thisRenderId);
                 } catch (error) {
@@ -1238,11 +1379,11 @@
             },
 
             // 렌더링
-            _render: function(guide, renderId) {
+            _render: function (guide, renderId) {
                 const isVoiceGuide = (!guide.imageUrl && !guide.imageDataUrl) && (guide.voiceQuery || guide.title);
                 const imageUrl = guide.imageUrl || guide.imageDataUrl || '/images/landing-logo.jpg';
                 this._els.image.src = imageUrl;
-                
+
                 if (!guide.imageUrl && !guide.imageDataUrl) {
                     this._els.image.style.filter = 'blur(8px) brightness(0.7)';
                     this._els.image.style.transform = 'scale(1.1)';
@@ -1250,9 +1391,9 @@
                     this._els.image.style.filter = '';
                     this._els.image.style.transform = '';
                 }
-                
+
                 this._els.description.textContent = guide.description || '내용 없음';
-                
+
                 if (isVoiceGuide) {
                     this._els.locationInfo.classList.add('hidden');
                     if (this._els.voiceQueryInfo && this._els.voiceQueryText) {
@@ -1283,70 +1424,70 @@
             },
 
             // 페이지 표시
-            _show: function() {
+            _show: function () {
                 this._els.page.classList.remove('hidden');
                 document.documentElement.style.overflow = 'hidden';
                 document.body.style.overflow = 'hidden';
                 this._refreshTranslationState();
             },
-            
+
             // 번역 상태 재확인
-            _refreshTranslationState: function() {
+            _refreshTranslationState: function () {
                 const self = this;
                 const userLang = localStorage.getItem('appLanguage') || 'ko';
-                
+
                 if (userLang === 'ko') {
                     this._state.translationComplete = true;
                     return;
                 }
-                
-                const hasTranslateClass = document.body.classList.contains('translated-ltr') || 
-                                          document.body.classList.contains('translated-rtl');
+
+                const hasTranslateClass = document.body.classList.contains('translated-ltr') ||
+                    document.body.classList.contains('translated-rtl');
                 if (hasTranslateClass) {
                     this._state.translationComplete = true;
                     return;
                 }
-                
+
                 this._state.translationComplete = false;
-                
+
                 if (this._state.translationObserver) {
                     this._state.translationObserver.disconnect();
                 }
-                
-                this._state.translationObserver = new MutationObserver(function(mutations) {
-                    const hasTranslated = document.body.classList.contains('translated-ltr') || 
-                                          document.body.classList.contains('translated-rtl');
+
+                this._state.translationObserver = new MutationObserver(function (mutations) {
+                    const hasTranslated = document.body.classList.contains('translated-ltr') ||
+                        document.body.classList.contains('translated-rtl');
                     if (hasTranslated) {
                         self._state.translationComplete = true;
                         self._state.translationObserver.disconnect();
                         window.dispatchEvent(new CustomEvent('profileTranslationComplete'));
                     }
                 });
-                
-                this._state.translationObserver.observe(document.body, { 
-                    attributes: true, 
-                    attributeFilter: ['class'] 
+
+                this._state.translationObserver.observe(document.body, {
+                    attributes: true,
+                    attributeFilter: ['class']
                 });
             },
 
             // 페이지 닫기
-            close: function() {
+            close: function () {
                 this._stopAudio();
                 this._els.page.classList.add('hidden');
                 document.documentElement.style.overflow = '';
                 document.body.style.overflow = '';
-                
+
                 if (this._state.onClose) {
                     this._state.onClose();
                 }
             },
 
             // 음성 재생 (문장별 하이라이트 + 자동 스크롤)
-            _playAudio: async function(text, savedVoiceLang, savedVoiceName, renderId) {
+            _playAudio: async function (text, savedVoiceLang, savedVoiceName, renderId) {
                 const self = this;
                 const thisRenderId = renderId || this._state.renderId;
                 this._stopAudio();
-                
+
                 const userLang = localStorage.getItem('appLanguage') || 'ko';
                 if (userLang !== 'ko' && !this._state.translationComplete) {
                     await new Promise(resolve => {
@@ -1358,13 +1499,13 @@
                         setTimeout(resolve, 3500);
                     });
                 }
-                
+
                 // 🌐 2025-12-24: 번역 클래스 감지 후 실제 텍스트 변환까지 추가 대기 (500ms)
                 if (userLang !== 'ko') {
                     await new Promise(r => setTimeout(r, 500));
                     console.log('[TTS] 번역 텍스트 적용 대기 완료 (500ms)');
                 }
-                
+
                 // 🌐 Google Translate의 <font> 태그에서 번역된 텍스트 추출
                 let currentText = text;
                 const fontEl = this._els.description.querySelector('font');
@@ -1376,14 +1517,14 @@
                 }
                 const cleanText = currentText.replace(new RegExp('<br\\s*/?>', 'gi'), ' ');
                 const sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
-                
+
                 this._state.originalText = cleanText;
                 this._state.currentUtterance = new SpeechSynthesisUtterance(cleanText);
-                
+
                 // 🌐 2025-12-24: 앱 언어 무조건 우선 (저장된 언어 무시)
                 const langFullMap = { 'ko': 'ko-KR', 'en': 'en-US', 'ja': 'ja-JP', 'zh-CN': 'zh-CN', 'fr': 'fr-FR', 'de': 'de-DE', 'es': 'es-ES' };
                 const fullLang = langFullMap[userLang] || 'ko-KR';
-                
+
                 let voices = this._state.synth.getVoices();
                 if (voices.length === 0) {
                     await new Promise(resolve => {
@@ -1398,38 +1539,38 @@
                     voices = this._state.synth.getVoices();
                 }
                 this._state.voices = voices;
-                
+
                 let targetVoice = null;
                 const shortLang = fullLang.substring(0, 2);
-                
+
                 if (shortLang === 'ko') {
                     // ⭐ 한국어 하드코딩 (iOS: Yuna/Sora, Android: 유나/소라, Windows: Heami)
                     const koVoices = voices.filter(v => v.lang.startsWith('ko'));
                     // Yuna → Sora → 유나 → 소라 → Heami → 첫 번째 한국어 음성
                     targetVoice = koVoices.find(v => v.name.includes('Yuna'))
-                               || koVoices.find(v => v.name.includes('Sora'))
-                               || koVoices.find(v => v.name.includes('유나'))
-                               || koVoices.find(v => v.name.includes('소라'))
-                               || koVoices.find(v => v.name.includes('Heami'))
-                               || koVoices[0];
+                        || koVoices.find(v => v.name.includes('Sora'))
+                        || koVoices.find(v => v.name.includes('유나'))
+                        || koVoices.find(v => v.name.includes('소라'))
+                        || koVoices.find(v => v.name.includes('Heami'))
+                        || koVoices[0];
                     console.log('[ProfileDetailPage TTS] 한국어 음성:', targetVoice?.name);
                 } else {
                     targetVoice = this._getVoiceForLanguage(shortLang === 'zh' ? 'zh-CN' : shortLang);
                 }
-                
+
                 this._state.currentUtterance.voice = targetVoice;
                 this._state.currentUtterance.lang = fullLang;
                 this._state.currentUtterance.rate = 1.0;
-                
+
                 let currentSentenceIndex = 0;
-                
+
                 this._state.currentUtterance.onstart = () => {
                     self._updateAudioButtonIcon(true);
                 };
-                
+
                 this._state.currentUtterance.onboundary = (event) => {
                     if (thisRenderId !== self._state.renderId) return;
-                    
+
                     if (event.name === 'sentence') {
                         const highlightedHTML = sentences.map((sentence, idx) => {
                             if (idx === currentSentenceIndex) {
@@ -1437,28 +1578,28 @@
                             }
                             return sentence;
                         }).join('');
-                        
+
                         self._els.description.innerHTML = highlightedHTML;
                         currentSentenceIndex++;
-                        
+
                         const currentSpan = self._els.description.querySelector('.current-sentence');
                         if (currentSpan) {
                             currentSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                     }
                 };
-                
+
                 this._state.currentUtterance.onend = () => {
                     if (thisRenderId !== self._state.renderId) return;
                     self._updateAudioButtonIcon(false);
                     self._els.description.textContent = self._state.originalText;
                 };
-                
+
                 this._state.synth.speak(this._state.currentUtterance);
             },
 
             // 음성 정지
-            _stopAudio: function() {
+            _stopAudio: function () {
                 if (this._state.currentUtterance) {
                     this._state.currentUtterance.onboundary = null;
                     this._state.currentUtterance.onend = null;
@@ -1477,7 +1618,7 @@
             },
 
             // 음성 토글
-            _toggleAudio: function() {
+            _toggleAudio: function () {
                 const text = this._els.description.textContent;
                 if (!text || text === '불러오는 중...') return;
 
@@ -1489,7 +1630,7 @@
             },
 
             // 오디오 버튼 아이콘 업데이트
-            _updateAudioButtonIcon: function(isPlaying) {
+            _updateAudioButtonIcon: function (isPlaying) {
                 this._els.audioBtn.innerHTML = isPlaying ? `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
                         <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clip-rule="evenodd" />
@@ -1502,16 +1643,16 @@
             },
 
             // 텍스트 토글
-            _toggleText: function() {
+            _toggleText: function () {
                 this._state.isTextVisible = !this._state.isTextVisible;
                 this._els.textOverlay.style.opacity = this._state.isTextVisible ? '1' : '0';
             },
 
             // 💾 로컬 보관함(IndexedDB)에 저장 + 서버 DB 동기화 (2025-12-15 수정)
-            _saveToLocal: async function() {
+            _saveToLocal: async function () {
                 // 🔊 음성 재생 중이면 먼저 정지
                 this._stopAudio();
-                
+
                 const data = this._state.currentGuideData;
                 if (!data) {
                     console.warn('[ProfileDetailPage] 저장할 데이터 없음');
@@ -1537,12 +1678,12 @@
                     // IndexedDB 저장 (서버에는 이미 존재하므로 동기화 불필요)
                     const savedId = await this._addToIndexedDB(guideData);
                     console.log('[ProfileDetailPage] IndexedDB 저장 완료, ID:', savedId, 'serverId:', guideData.serverId);
-                    
+
                     showToast('보관함에 저장되었습니다');
-                    
+
                     this._els.saveBtn.disabled = false;
                     this._els.saveBtn.style.opacity = '1';
-                    
+
                 } catch (error) {
                     console.error('[ProfileDetailPage] 저장 실패:', error);
                     showToast('저장에 실패했습니다');
@@ -1552,15 +1693,15 @@
             },
 
             // IndexedDB에 아이템 추가 (index.js addItem 함수 복붙)
-            _addToIndexedDB: function(item) {
+            _addToIndexedDB: function (item) {
                 return new Promise((resolve, reject) => {
                     // 🔧 2025-12-12: index.js와 완전히 동일한 설정
                     const DB_NAME = 'TravelGuideDB';
                     const DB_VERSION = 2;
                     const STORE_NAME = 'archive';
-                    
+
                     const request = indexedDB.open(DB_NAME, DB_VERSION);
-                    
+
                     request.onupgradeneeded = (e) => {
                         const db = e.target.result;
                         if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -1571,31 +1712,31 @@
                             shareStore.createIndex('featured', 'featured', { unique: false });
                         }
                     };
-                    
+
                     request.onsuccess = (e) => {
                         const db = e.target.result;
                         // index.js addItem과 동일: 고유 ID 생성
                         const uniqueId = item.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                         const itemWithId = { ...item, id: uniqueId };
-                        
+
                         const tx = db.transaction(STORE_NAME, 'readwrite');
                         const store = tx.objectStore(STORE_NAME);
                         const addRequest = store.add(itemWithId);
-                        
+
                         addRequest.onsuccess = () => {
                             console.log('[ProfileDetailPage] 보관함 저장 완료, ID:', addRequest.result);
                             resolve(addRequest.result);
                         };
                         addRequest.onerror = () => reject(addRequest.error);
                     };
-                    
+
                     request.onerror = () => reject(request.error);
                 });
             }
         };
-        
+
         profileDetailPage.init();
-        
+
         function viewGuideDetail(guideId) {
             profileDetailPage.open(guideId);
         }
@@ -1606,7 +1747,7 @@
 
         async function sharePage(pageId, pageName) {
             const shareUrl = `${window.location.origin}/s/${pageId}`;
-            
+
             // 📋 클립보드에 복사 시도
             let copySuccess = false;
             try {
@@ -1653,7 +1794,7 @@
                     `}
                 </div>
             `;
-            
+
             shareModal.classList.remove('hidden');
 
             // 수동 복사 버튼 이벤트 리스너 (클립보드 실패 시)
@@ -1700,20 +1841,20 @@
                 credentials: 'include',
                 body: JSON.stringify({ sessionId })
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    showToast(`✅ ${result.added || 140} 크레딧이 충전되었습니다!`);
-                    loadProfile();
-                    loadTransactions();
-                } else {
-                    showToast(result.message || result.error || '결제 확인 완료');
-                }
-            })
-            .catch(error => {
-                console.error('Payment verification error:', error);
-                showToast('결제 확인 중 오류가 발생했습니다.');
-            });
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showToast(`✅ ${result.added || 140} 크레딧이 충전되었습니다!`);
+                        loadProfile();
+                        loadTransactions();
+                    } else {
+                        showToast(result.message || result.error || '결제 확인 완료');
+                    }
+                })
+                .catch(error => {
+                    console.error('Payment verification error:', error);
+                    showToast('결제 확인 중 오류가 발생했습니다.');
+                });
             window.history.replaceState({}, document.title, '/profile.html');
         } else if (paymentStatus === 'cancel') {
             showToast('결제가 취소되었습니다.');
@@ -1723,23 +1864,23 @@
         // ═══════════════════════════════════════════════════════════════
         // 💰 캐시백 모달 제어 (2025-11-29 간소화)
         // ═══════════════════════════════════════════════════════════════
-        
+
         function openCashbackModal() {
             const modal = document.getElementById('cashbackModal');
             modal.classList.remove('hidden', 'pointer-events-none');
             loadCashbackInfo();
         }
-        
+
         function closeCashbackModal() {
             const modal = document.getElementById('cashbackModal');
             modal.classList.add('hidden', 'pointer-events-none');
         }
-        
+
         // 모달 외부 클릭 시 닫기
         document.getElementById('cashbackModal').addEventListener('click', (e) => {
             if (e.target.id === 'cashbackModal') closeCashbackModal();
         });
-        
+
         // 캐시백 버튼 표시/숨김 (크레딧 1000 이상일 때만 표시)
         function updateCashbackButtonVisibility(credits) {
             const cashbackBtn = document.getElementById('cashbackBtn');
@@ -1749,23 +1890,23 @@
                 cashbackBtn.classList.add('hidden');
             }
         }
-        
+
         async function loadCashbackInfo() {
             try {
                 const [profileRes, historyRes] = await Promise.all([
                     fetch('/api/profile', { credentials: 'include' }),
                     fetch('/api/profile/cashback/history', { credentials: 'include' })
                 ]);
-                
+
                 const profileData = await profileRes.json();
                 const historyData = await historyRes.json();
-                
+
                 const credits = profileData.credits || 0;
                 document.getElementById('cashbackCredits').textContent = credits;
-                
+
                 // 캐시백 버튼 표시 업데이트
                 updateCashbackButtonVisibility(credits);
-                
+
                 if (credits >= 1000) {
                     document.getElementById('cashbackForm').classList.remove('hidden');
                     document.getElementById('cashbackNotEligible').classList.add('hidden');
@@ -1773,7 +1914,7 @@
                     document.getElementById('cashbackForm').classList.add('hidden');
                     document.getElementById('cashbackNotEligible').classList.remove('hidden');
                 }
-                
+
                 // 캐시백 내역 표시
                 if (historyData.requests && historyData.requests.length > 0) {
                     document.getElementById('cashbackHistory').classList.remove('hidden');
@@ -1783,7 +1924,7 @@
                             'approved': '✅ 승인',
                             'rejected': '❌ 거절'
                         }[req.status] || req.status;
-                        
+
                         return `
                             <div class="bg-gray-50 rounded-lg p-3">
                                 <div class="flex items-center justify-between mb-1">
@@ -1802,16 +1943,16 @@
                 console.error('Cashback info load error:', error);
             }
         }
-        
+
         // 캐시백 신청
         document.getElementById('requestCashbackBtn').onclick = async () => {
             const paymentMethod = document.getElementById('cashbackPaymentMethod').value.trim();
-            
+
             if (!paymentMethod) {
                 showToast('결제 수단 정보를 입력해주세요.');
                 return;
             }
-            
+
             try {
                 const response = await fetch('/api/profile/cashback/request', {
                     method: 'POST',
@@ -1819,9 +1960,9 @@
                     credentials: 'include',
                     body: JSON.stringify({ paymentMethod, paymentInfo: paymentMethod })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showToast('캐시백 신청이 완료되었습니다!');
                     document.getElementById('cashbackPaymentMethod').value = '';
@@ -1860,42 +2001,96 @@
         });
     </script>
 
-<!-- Google Translate Widget (숨김) -->
-<div id="google_translate_element" style="display:none;"></div>
+    <!-- Google Translate Widget (숨김) -->
+    <div id="google_translate_element" style="display:none;"></div>
 
-<!-- Google Translate Initialization -->
-<script type="text/javascript">
-    function googleTranslateElementInit() {
-        // 🌐 2025-12-24: 양방향 번역 - 콘텐츠 언어 자동 감지, 앱 언어로 번역
-        new google.translate.TranslateElement({
-            pageLanguage: 'auto',
-            includedLanguages: 'ko,en,ja,zh-CN,fr,de,es',
-            autoDisplay: false
-        }, 'google_translate_element');
-    }
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <!-- Google Translate Initialization -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            // 🌐 2025-12-24: 양방향 번역 - 콘텐츠 언어 자동 감지, 앱 언어로 번역
+            new google.translate.TranslateElement({
+                pageLanguage: 'auto',
+                includedLanguages: 'ko,en,ja,zh-CN,fr,de,es',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript"
+        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<!-- Google Translate CSS 숨김 + 스피너 완전 숨김 -->
-<style>
-    .goog-te-banner-frame { display: none !important; }
-    .goog-te-banner-frame.skiptranslate { display: none !important; }
-    body { top: 0px !important; }
-    .goog-te-gadget { font-size: 0px !important; color: transparent !important; }
-    .goog-logo-link { display: none !important; }
-    .skiptranslate { display: none !important; }
-    .goog-te-spinner-pos { display: none !important; }
-    .goog-te-spinner { display: none !important; }
-    .goog-te-spinner-animation { display: none !important; }
-    .goog-te-menu-frame { display: none !important; }
-    .goog-te-menu2 { display: none !important; }
-    #goog-gt-tt { display: none !important; }
-    .goog-te-balloon-frame { display: none !important; }
-    .goog-text-highlight { background: none !important; box-shadow: none !important; }
-    iframe.goog-te-menu-frame { display: none !important; }
-    iframe.skiptranslate { display: none !important; }
-    [id^="goog-gt-"] { display: none !important; }
-</style>
+    <!-- Google Translate CSS 숨김 + 스피너 완전 숨김 -->
+    <style>
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+
+        body {
+            top: 0px !important;
+        }
+
+        .goog-te-gadget {
+            font-size: 0px !important;
+            color: transparent !important;
+        }
+
+        .goog-logo-link {
+            display: none !important;
+        }
+
+        .skiptranslate {
+            display: none !important;
+        }
+
+        .goog-te-spinner-pos {
+            display: none !important;
+        }
+
+        .goog-te-spinner {
+            display: none !important;
+        }
+
+        .goog-te-spinner-animation {
+            display: none !important;
+        }
+
+        .goog-te-menu-frame {
+            display: none !important;
+        }
+
+        .goog-te-menu2 {
+            display: none !important;
+        }
+
+        #goog-gt-tt {
+            display: none !important;
+        }
+
+        .goog-te-balloon-frame {
+            display: none !important;
+        }
+
+        .goog-text-highlight {
+            background: none !important;
+            box-shadow: none !important;
+        }
+
+        iframe.goog-te-menu-frame {
+            display: none !important;
+        }
+
+        iframe.skiptranslate {
+            display: none !important;
+        }
+
+        [id^="goog-gt-"] {
+            display: none !important;
+        }
+    </style>
 
 </body>
+
 </html>

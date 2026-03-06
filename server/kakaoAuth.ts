@@ -161,112 +161,45 @@ export async function setupKakaoAuth(app: Express) {
                 body {
                   font-family: 'MaruBuri', -apple-system, BlinkMacSystemFont, sans-serif;
                   display: flex;
-                  flex-direction: column;
                   align-items: center;
                   justify-content: center;
                   min-height: 100vh;
                   background-color: #FFFEFA;
-                  padding: 20px;
                 }
-                .container {
-                  text-align: center;
-                  max-width: 400px;
+                .spinner {
+                  width: 2.5rem; height: 2.5rem;
+                  border: 3px solid rgba(66,133,244,0.2);
+                  border-top-color: #4285F4;
+                  border-radius: 50%;
+                  animation: spin 0.8s linear infinite;
                 }
-                .icon-wrapper {
-                  width: 5rem;
-                  height: 5rem;
-                  margin: 0 auto 2rem;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  border-radius: 9999px;
-                  background: rgba(66, 133, 244, 0.1);
-                  color: #4285F4;
-                }
-                h1 {
-                  font-size: 1.875rem;
-                  margin-bottom: 0.75rem;
-                  color: #333;
-                }
-                p {
-                  font-size: 1rem;
-                  margin-bottom: 2rem;
-                  color: #666;
-                }
-                #closeBtn {
-                  display: none;
-                  padding: 16px 40px;
-                  font-size: 18px;
-                  font-weight: 700;
-                  color: white;
-                  background: #4285F4;
-                  border: none;
-                  border-radius: 12px;
-                  cursor: pointer;
-                  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-                  transition: all 0.3s;
-                }
-                #closeBtn:hover {
-                  background: #3367D6;
-                  transform: translateY(-2px);
-                  box-shadow: 0 6px 16px rgba(66, 133, 244, 0.4);
-                }
-                #closeBtn:active {
-                  transform: translateY(0);
-                }
-                #autoCloseMsg {
-                  display: none;
-                  font-size: 14px;
-                  color: #666;
-                }
+                @keyframes spin { to { transform: rotate(360deg); } }
               </style>
             </head>
             <body>
-              <div class="container">
-                <div class="icon-wrapper">
-                  <svg xmlns="http://www.w3.org/2000/svg" style="width: 3rem; height: 3rem;" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <h1>로그인 성공!</h1>
-                <p id="message">인증이 완료되었습니다</p>
-                <button id="closeBtn" onclick="closeAndReturn()" style="display:inline-block;">앱으로 돌아가기</button>
-                <p id="autoCloseMsg" style="display:block;">잠시 후 자동으로 돌아갑니다...</p>
-              </div>
+              <div class="spinner"></div>
               <script>
                 // ═══════════════════════════════════════════════════════════════
-                // ⚠️ 2026-03-05: 세션 유지 원칙 + 버튼 먹통 해결
-                // - 절대 리다이렉트 금지 (window.location.href 사용 금지)
-                // - window.close() → 실패 시 history.back() fallback
-                // - 버튼 항상 표시 + onclick 직접 사용
+                // 2026-03-06: Kakao OAuth 완료 처리
+                // - 팝업 환경(웹 브라우저): postMessage → window.close()
+                // - WebView 환경(앱): opener 없음 → 즉시 앱 루트로 이동
+                // - 중간 대기 없음, 사용자 눈에 안 보임
                 // ═══════════════════════════════════════════════════════════════
-
-                function closeAndReturn() {
-                  // 1. 부모 창에 인증 성공 메시지 전달
+                (function() {
                   try {
                     if (window.opener && !window.opener.closed) {
+                      // 웹 팝업: 부모 탭에 성공 알림 후 창 닫기
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
+                      window.close();
+                    } else {
+                      // Android WebView: opener 없음 → 앱 루트로 즉시 이동
+                      window.location.replace('/');
                     }
-                  } catch(e) { console.log('postMessage 실패:', e); }
-
-                  // 2. window.close() 시도
-                  window.close();
-
-                  // 3. close()가 실패하면 (Android WebView) history.back()으로 앱 복귀
-                  setTimeout(function() {
-                    history.back();
-                  }, 300);
-
-                  // 4. history.back()도 실패하면 (히스토리 없음) 메시지 표시
-                  setTimeout(function() {
-                    document.getElementById('autoCloseMsg').textContent = '앱으로 돌아가서 계속 사용하세요';
-                  }, 1000);
-                }
-
-                // 1.5초 후 자동 닫기/복귀 시도
-                setTimeout(function() {
-                  closeAndReturn();
-                }, 1500);
+                  } catch(e) {
+                    // 예외 발생 시 안전하게 앱 루트로
+                    window.location.replace('/');
+                  }
+                })();
               </script>
             </body>
             </html>
