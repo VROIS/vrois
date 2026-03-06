@@ -225,10 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         excludeVoices: config.excludeVoices || []
                     };
                 }
-                console.log('🔊 [Voice DB] 설정 로드 완료:', Object.keys(voiceConfigsCache));
             }
         } catch (error) {
-            console.warn('🔊 [Voice DB] 로드 실패, 기본값 사용:', error.message);
         }
         voiceConfigsLoading = false;
         return voiceConfigsCache;
@@ -284,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (userLang === 'ko') {
             translationState.complete = true;
-            console.log('[Translation] 한국어 - 번역 대기 불필요');
             return;
         }
 
@@ -292,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.contains('translated-rtl');
         if (hasTranslated) {
             translationState.complete = true;
-            console.log('[Translation] 이미 번역 완료됨');
             return;
         }
 
@@ -301,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasTranslatedNow = document.body.classList.contains('translated-ltr') ||
                 document.body.classList.contains('translated-rtl');
             if (hasTranslatedNow) {
-                console.log('[Translation] 🌐 번역 완료 감지!');
                 translationState.complete = true;
                 translationState.observer?.disconnect();
                 window.dispatchEvent(new CustomEvent('appTranslationComplete'));
@@ -315,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         translationState.timeoutId = setTimeout(() => {
             if (!translationState.complete) {
-                console.log('[Translation] 번역 타임아웃 - 원본 사용');
                 translationState.complete = true;
                 translationState.observer?.disconnect();
                 window.dispatchEvent(new CustomEvent('appTranslationComplete', { detail: { timeout: true } }));
@@ -329,7 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        console.log('[TTS] 번역 완료 대기 중...');
         await new Promise(resolve => {
             const handler = () => {
                 window.removeEventListener('appTranslationComplete', handler);
@@ -356,13 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectElement = document.querySelector('.goog-te-combo');
 
             if (!selectElement || !selectElement.value) {
-                console.log('[Retranslate] Google Translate 드롭다운 비활성 - 스킵');
                 resolve();
                 return;
             }
 
             const currentLang = selectElement.value;
-            console.log('[Retranslate] 🔄 강제 재번역 시작:', currentLang);
             retranslationPending = true;
 
             // 1. 원래 언어로 리셋
@@ -376,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 3. 번역 완료 대기 (MutationObserver 또는 타임아웃)
                 setTimeout(() => {
-                    console.log('[Retranslate] ✅ 재번역 완료');
                     retranslationPending = false;
                     window.dispatchEvent(new CustomEvent('retranslationComplete'));
                     resolve();
@@ -388,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function waitForRetranslation() {
         if (!retranslationPending) return;
 
-        console.log('[TTS] 재번역 완료 대기 중...');
         await new Promise(resolve => {
             const handler = () => {
                 window.removeEventListener('retranslationComplete', handler);
@@ -483,12 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('adminAuthenticated');
                 localStorage.removeItem('adminAuthTime');
                 localStorage.removeItem('adminPassword');
-                console.log('🔧 [동기화] 서버 인증 없음 → 관리자 상태 초기화');
             }
         } catch (e) {
             // 에러 시에도 정리
             localStorage.removeItem('adminAuthenticated');
-            console.log('🔧 [동기화] 인증 확인 실패 → 관리자 상태 초기화');
         }
     })();
 
@@ -504,7 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     user = data.user;
                 }
                 if (user) {
-                    console.log('✅ 인증된 사용자:', user.email || user.id);
                     try {
                         localStorage.setItem('cachedUser', JSON.stringify({
                             id: user.id,
@@ -522,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cached) {
                 try {
                     const parsedUser = JSON.parse(cached);
-                    console.log('📦 캐시된 인증 사용:', parsedUser.email || parsedUser.id);
                     return parsedUser;
                 } catch (e) { }
             }
@@ -581,7 +566,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkUsageLimit(type = 'detail') {
         // 🎁 2026-01-07: 프로모션 기간 - 사용량 제한 임시 비활성화
         // 프로모션 종료 후 아래 return true를 삭제하면 원래대로 복원됨
-        console.log('🎁 [프로모션] 사용량 제한 비활성화 - 무제한 허용');
         return true;
 
         /* ========== 🔒 프로모션 종료 후 아래 주석 해제 ==========
@@ -590,7 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. 서버에서 관리자로 확인되면 무제한
         if (user && user.isAdmin) {
-            console.log('🔓 서버 관리자 확인: 사용량 제한 없음');
             return true;
         }
 
@@ -601,13 +584,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const current = type === 'detail' ? usage.detail : usage.share;
 
             if (current >= limit) {
-                console.log(`🔒 비가입자 ${type} 제한 초과: ${current}/${limit}`);
                 showAuthModalForUsage();
                 return false;
             }
 
             // 횟수 증가는 AI 호출 성공 후에 해야 하므로 여기서는 안 함
-            console.log(`✅ 비가입자 ${type} 허용: ${current + 1}/${limit}`);
             return true;
         }
 
@@ -616,12 +597,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const cost = type === 'detail' ? USAGE_LIMITS.DETAIL_CREDIT_COST : USAGE_LIMITS.SHARE_CREDIT_COST;
 
         if (credits < cost) {
-            console.log(`🔒 크레딧 부족: ${credits}/${cost}`);
             showChargeModal();
             return false;
         }
 
-        console.log(`✅ 크레딧 충분: ${credits} (필요: ${cost})`);
         return true;
         ========== 프로모션 종료 후 위 주석 해제 ========== */
     }
@@ -644,7 +623,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // 비가입자: 횟수 증가 (localStorage)
             incrementGuestUsage(type);
             const usage = getGuestUsage();
-            console.log(`📊 비가입자 사용량 업데이트: detail=${usage.detail}, share=${usage.share}`);
         }
         // ✅ 가입자 크레딧 차감은 서버에서 자동 처리됨 (이중 차감 방지)
     }
@@ -697,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
             script.onload = () => {
                 googleMapsLoaded = true;
                 geocoder = new google.maps.Geocoder();
-                console.log('🗺️ Google Maps API 로드 완료');
                 if (callback) callback();
             };
             script.onerror = () => {
@@ -709,10 +686,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 📍 주변 유명 랜드마크 찾기 (GPS → "에펠탑", "루브르 박물관" 등)
     async function getNearbyLandmark(lat, lng) {
-        console.log('🔍 랜드마크 검색 시작:', lat, lng);
 
         if (!googleMapsLoaded || !window.google) {
-            console.warn('⚠️ Google Maps가 로드되지 않음');
             return null;
         }
 
@@ -722,7 +697,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const service = new google.maps.places.PlacesService(map);
             const location = new google.maps.LatLng(lat, lng);
 
-            console.log('🔍 Places Nearby Search 호출 (반경 100m)...');
             const request = {
                 location: location,
                 radius: 100,
@@ -730,7 +704,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             service.nearbySearch(request, (places, status) => {
-                console.log('📡 Places API 응답:', status);
 
                 if (status === google.maps.places.PlacesServiceStatus.OK && places && places.length > 0) {
                     // 랜드마크/관광지 우선 검색
@@ -744,14 +717,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ) || places[0];
 
                     const placeName = nearbyPlace.name;
-                    console.log('🎯 근처 장소:', placeName, '(타입:', nearbyPlace.types.join(', ') + ')');
                     resolve(placeName);
                 } else {
                     // Places API 실패 → Geocoding Fallback
-                    console.log('📍 Places API 실패, Geocoding으로 전환');
 
                     if (!geocoder) {
-                        console.warn('⚠️ Geocoder 초기화 안 됨');
                         resolve(null);
                         return;
                     }
@@ -761,10 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             const city = geoResults[0].address_components.find(
                                 c => c.types.includes('locality')
                             )?.long_name || geoResults[0].formatted_address.split(',')[0];
-                            console.log('📍 도시 찾음:', city);
                             resolve(city);
                         } else {
-                            console.warn('⚠️ 위치 정보 찾기 실패');
                             resolve(null);
                         }
                     });
@@ -1287,7 +1255,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const langCode = langCodeMap[userLang] || 'ko-KR';
             voices = allVoices.filter(v => v.lang.startsWith(langCode.substring(0, 2)));
             
-            console.log('🎤 [음성로드]', langCodeMap[userLang], '음성 개수:', voices.length);
         }
         
         function stopAudio() {
@@ -1349,14 +1316,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentUtterance.voice = targetVoice;
                 currentUtterance.lang = 'ko-KR';
                 currentUtterance.rate = 1.0;
-                console.log('🎤 [한국어] 음성:', targetVoice?.name || 'default');
             } else {
                 // 다른 6개 언어는 기존 DB 기반 유지
                 const targetVoice = getVoiceForLanguage(userLang, synth.getVoices());
                 currentUtterance.voice = targetVoice;
                 currentUtterance.lang = langCode;
                 currentUtterance.rate = 1.0;
-                console.log('🎤 [음성재생]', langCode, '음성:', targetVoice?.name || 'default');
             }
             
             const playIcon = document.getElementById('play-icon');
@@ -1495,10 +1460,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
-                        console.log('✅ [SW] v10 등록 성공:', registration.scope);
                     })
                     .catch(error => {
-                        console.log('❌ [SW] 등록 실패:', error);
                     });
             });
         }
@@ -1603,7 +1566,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resumeCamera();
         } else if (!stream && cameraWasActive) {
             // Featured 페이지 이동으로 stream이 없어진 경우 카메라 재시작
-            console.log('🔄 Restoring camera after Featured page visit');
             handleStartFeaturesClick();
         }
     }
@@ -1680,7 +1642,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return 0;
         } catch (error) {
-            console.warn('알림 수 조회 실패:', error);
             return 0;
         }
     }
@@ -1706,7 +1667,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return [];
         } catch (error) {
-            console.warn('알림 목록 조회 실패:', error);
             return [];
         }
     }
@@ -1807,7 +1767,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ notificationId })
             });
         } catch (error) {
-            console.warn('알림 읽음 처리 실패:', error);
         }
     }
 
@@ -1819,7 +1778,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 credentials: 'include'
             });
         } catch (error) {
-            console.warn('알림 삭제 실패:', error);
         }
     }
 
@@ -1835,7 +1793,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderNotifications(notifications);
             showToast('모든 알림을 삭제했습니다');
         } catch (error) {
-            console.warn('전체 삭제 실패:', error);
         }
     }
 
@@ -1866,7 +1823,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 notificationBadge.classList.add('hidden');
             }
         } catch (error) {
-            console.warn('알림 읽음 처리 실패:', error);
         }
     }
 
@@ -2000,7 +1956,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.open('/profile.html', '_blank');
             }
         } catch (error) {
-            console.warn('알림 수 확인 실패:', error);
             window.open('/profile.html', '_blank');
         }
     });
@@ -2026,25 +1981,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 인증 완료 후 대기 중인 공유 URL 확인
-        console.log('🔍 Checking for pending share URL...');
         const pendingUrl = localStorage.getItem('pendingShareUrl');
-        console.log('📦 localStorage.pendingShareUrl:', pendingUrl);
         if (pendingUrl) {
-            console.log('🎯 Opening pending share URL after auth:', pendingUrl);
             localStorage.removeItem('pendingShareUrl');
-            console.log('🗑️ Removed from localStorage');
             // 새 창으로 열기 (대시보드/설명서와 동일, X 버튼 작동!)
             setTimeout(() => {
-                console.log('🚀 Opening page in new window:', pendingUrl);
                 window.open(pendingUrl, '_blank');
             }, 500);
         } else {
-            console.log('❌ No pending URL found');
         }
 
         // ✨ 보관함 직접 접속 (#archive) 처리 (2025-10-28)
         if (window.location.hash === '#archive') {
-            console.log('📁 Direct archive access detected');
             showArchivePage();
         }
         // The landing page animation will handle showing the features page initially.
@@ -2077,7 +2025,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.updateRecognitionLang = function () {
             if (recognition) {
                 recognition.lang = getRecognitionLang();
-                console.log('🌐 음성 인식 언어 변경:', recognition.lang);
             }
         };
 
@@ -2096,12 +2043,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('message', (event) => {
             // 보안: origin 체크 (같은 도메인만 허용)
             if (event.origin !== window.location.origin) {
-                console.warn('⚠️ Unauthorized message origin:', event.origin);
                 return;
             }
 
             if (event.data.type === 'oauth_success') {
-                console.log('✅ OAuth 팝업 성공 메시지 수신!');
 
                 // 인증 모달 닫기
                 authModal?.classList.add('hidden');
@@ -2111,12 +2056,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // pendingShareUrl로 새 창에서 열기
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
                 if (pendingUrl) {
-                    console.log('🎯 Opening pending URL in new window:', pendingUrl);
                     localStorage.removeItem('pendingShareUrl');
                     window.open(pendingUrl, '_blank');
                 } else {
                     // 🎁 2026-01-07: 프로모션 - 인증 후 자동으로 메인 페이지 진입
-                    console.log('🚀 인증 완료 → 메인 페이지 자동 진입');
                     handleStartFeaturesClick();
                 }
             }
@@ -2125,7 +2068,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // ⚠️ 2025.11.12: OAuth 새 탭 완료 시 storage 이벤트 감지
         window.addEventListener('storage', (event) => {
             if (event.key === 'auth_success' && event.newValue === 'true') {
-                console.log('🔔 Storage 이벤트 감지: auth_success = true');
                 // 🎁 2026-01-07: 프로모션 - 인증 후 자동으로 메인 페이지 진입
                 checkAuthStatusAndCloseModal();
                 handleStartFeaturesClick();
@@ -2137,39 +2079,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 인증 상태 확인 및 모달 자동 닫기
+    let _lastAuthCheck = 0;
     async function checkAuthStatusAndCloseModal() {
-        console.log('🟡 Checking auth status...');
 
         // ⚠️ 2025.11.06: OAuth 리다이렉트 후 플래그 확인 (모바일 대응)
         const authSuccess = localStorage.getItem('auth_success');
         if (authSuccess === 'true') {
-            console.log('✅ OAuth 인증 성공 플래그 감지!');
             authModal?.classList.add('hidden');
             authModal?.classList.add('pointer-events-none');
             authModal?.classList.remove('pointer-events-auto');
             localStorage.removeItem('auth_success');
-            console.log('✅ Auth modal closed - OAuth redirect successful');
 
             // pendingShareUrl 확인하여 새 창에서 열기
             const pendingUrl = localStorage.getItem('pendingShareUrl');
             if (pendingUrl) {
-                console.log('🎯 Opening pending share URL in new window:', pendingUrl);
                 localStorage.removeItem('pendingShareUrl');
                 window.open(pendingUrl, '_blank');
             }
+            _lastAuthCheck = Date.now();
             return; // 플래그로 처리했으면 API 호출 스킵
         }
 
+        // 30초 디바운스 — focus/visibilitychange 과다 호출 방지
+        const now = Date.now();
+        if (now - _lastAuthCheck < 30000) return;
+        _lastAuthCheck = now;
+
         try {
             const response = await fetch('/api/auth/user', { credentials: 'include' });
-            console.log('🟡 Auth response:', response.ok, response.status);
             if (response.ok) {
                 // 로그인되어 있으면 authModal 닫기
-                console.log('🟡 Modal element:', authModal);
                 authModal?.classList.add('hidden');
                 authModal?.classList.add('pointer-events-none');
                 authModal?.classList.remove('pointer-events-auto');
-                console.log('✅ Auth modal closed - user is authenticated');
 
                 // /beta 경유 로그인: 베타 등록 백그라운드 처리
                 const betaSource = sessionStorage.getItem('betaSource');
@@ -2185,16 +2127,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 대기 중인 공유 URL이 있으면 새 창에서 열기
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
                 if (pendingUrl) {
-                    console.log('🎯 Opening pending share URL in new window:', pendingUrl);
                     localStorage.removeItem('pendingShareUrl');
                     window.open(pendingUrl, '_blank');
                 }
             } else {
-                console.log('⚪ Not authenticated, keeping modal state');
             }
         } catch (error) {
             // 에러 발생 시 무시 (모달 상태 유지)
-            console.log('⚠️ Auth check error:', error);
         }
     }
 
@@ -2202,7 +2141,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 🎁 2026-01-07: 프로모션 - 인증 필수 (미인증 시 모달 표시)
         const user = await checkUserAuth();
         if (!user) {
-            console.log('🔒 미인증 사용자 → 인증 모달 표시');
             // 기존 authModal 사용 (새로 만들지 않음)
             const authModal = document.getElementById('authModal');
             if (authModal) {
@@ -2214,7 +2152,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return; // 인증 완료 후 다시 호출됨
         }
 
-        console.log('✅ 인증 완료 → 메인 페이지 진입');
         showPage(mainPage);
         cameraStartOverlay.classList.add('hidden');
 
@@ -2239,7 +2176,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error(`Initialization error: ${error.message}`);
-            console.log('⚠️ 카메라 초기화 실패, 업로드 기능은 사용 가능합니다.');
             showToast("카메라를 시작할 수 없습니다. 업로드 기능을 사용해주세요.");
             // ✅ 수정: 카메라 실패해도 메인 페이지 유지 (업로드 기능은 사용 가능)
             // showPage(featuresPage); ← 제거됨
@@ -2266,7 +2202,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia(preferredConstraints);
             } catch (err) {
-                console.warn("Could not get camera with ideal constraints, falling back to basic.", err);
                 try {
                     cameraStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
                 } catch (fallbackErr) {
@@ -2310,7 +2245,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 🚨 2026-01-24: AI 처리 중이면 촬영 무시
         if (isAIProcessing) {
-            console.log('🚨 [촬영차단] AI 처리 중 - 클릭 무시');
             return;
         }
 
@@ -2339,7 +2273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════
     async function requestBrowserLocation() {
         if (!navigator.geolocation) {
-            console.warn('⚠️ 브라우저가 위치 정보를 지원하지 않습니다');
             return;
         }
 
@@ -2360,16 +2293,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 longitude: longitude,
                 locationName: null
             };
-            console.log('📍 브라우저 위치 추출 성공:', window.currentGPS);
 
             // 🗺️ 주변 유명 랜드마크 찾기
             loadGoogleMapsAPI(async () => {
-                console.log('🗺️ callback 실행됨 (브라우저 GPS)');
                 const landmark = await getNearbyLandmark(latitude, longitude);
-                console.log('🔎 랜드마크 검색 결과:', landmark);
                 if (landmark) {
                     window.currentGPS.locationName = landmark;
-                    console.log('✅ 위치 이름 저장 완료:', landmark);
                     // 📍 UI 업데이트
                     updateLocationInfoUI(landmark);
                 } else {
@@ -2378,10 +2307,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             if (error.code === 1) {
-                console.log('ℹ️ 사용자가 위치 권한을 거부했습니다');
                 updateLocationInfoUI('위치 권한 필요');
             } else if (error.code === 3) {
-                console.warn('⏱️ 위치 정보 타임아웃 - 시간이 오래 걸립니다');
                 updateLocationInfoUI('위치 확인 중...');
             } else {
                 console.error('위치 정보 오류:', error);
@@ -2398,7 +2325,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (locationInfo && locationNameEl) {
             locationNameEl.textContent = text;
             locationInfo.classList.remove('hidden');
-            console.log('📍 위치창 업데이트:', text);
         }
     }
 
@@ -2413,7 +2339,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file) {
             // 🚨 2026-01-24: AI 처리 중이면 업로드 무시
             if (isAIProcessing) {
-                console.log('🚨 [업로드차단] AI 처리 중 - 클릭 무시');
                 event.target.value = '';
                 return;
             }
@@ -2435,33 +2360,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             longitude: gpsData.longitude,
                             locationName: null
                         };
-                        console.log('📍 EXIF GPS 추출 성공:', window.currentGPS);
 
                         // 🗺️ Step 1.5: 주변 유명 랜드마크 찾기 (GPS → "에펠탑" 등)
                         loadGoogleMapsAPI(async () => {
-                            console.log('🗺️ callback 실행됨 (EXIF GPS)');
                             const landmark = await getNearbyLandmark(
                                 gpsData.latitude,
                                 gpsData.longitude
                             );
-                            console.log('🔎 랜드마크 검색 결과:', landmark);
                             if (landmark) {
                                 window.currentGPS.locationName = landmark;
-                                console.log('✅ 위치 이름 저장 완료:', landmark);
                                 updateLocationInfoUI(landmark);
                             } else {
                                 updateLocationInfoUI('위치 정보 없음');
                             }
                         });
                     } else {
-                        console.log('ℹ️ EXIF GPS 정보 없음 → 브라우저 위치 요청');
                         window.currentGPS = null;
 
                         // 📍 EXIF GPS 없으면 브라우저 위치 사용 (백그라운드)
                         requestBrowserLocation();
                     }
                 } else {
-                    console.warn('⚠️ exifr 라이브러리 로딩 실패 → 브라우저 위치 요청');
                     window.currentGPS = null;
 
                     // 📍 브라우저 위치 요청 (백그라운드)
@@ -2486,11 +2405,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function processImage(dataUrl, sourceButton) {
         // 🚨 2026-01-24: AI 중복 호출 차단 (비용 절감 핵심)
         if (isAIProcessing) {
-            console.log('🚨 [AI차단] 이미 AI 처리 중 - 중복 호출 무시');
             return;
         }
         isAIProcessing = true;
-        console.log('🔒 [AI시작] isAIProcessing = true (이미지)');
 
         sourceButton.disabled = true;
         cameFromArchive = false;
@@ -2510,7 +2427,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (locationInfo && locationNameEl) {
             locationNameEl.textContent = '위치 확인 중...';
             locationInfo.classList.remove('hidden');
-            console.log('📍 위치창 표시 (로딩 중)');
         }
 
         currentContent = { imageDataUrl: dataUrl, description: '' };
@@ -2569,10 +2485,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (locationInfo && locationNameEl) {
                 if (window.currentGPS && window.currentGPS.locationName) {
                     locationNameEl.textContent = window.currentGPS.locationName;
-                    console.log('📍 위치정보 표시:', window.currentGPS.locationName);
                 } else {
                     locationNameEl.textContent = '위치 정보 없음';
-                    console.log('📍 위치정보 없음 - 기본값 표시');
                 }
                 locationInfo.classList.remove('hidden');
             }
@@ -2626,7 +2540,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sourceButton.disabled = false;
             // 🚨 2026-01-24: AI 처리 완료 - 플래그 해제
             isAIProcessing = false;
-            console.log('🔓 [AI완료] isAIProcessing = false (이미지)');
         }
     }
 
@@ -2651,7 +2564,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 🎤 10초 타임아웃 (iOS Safari 호환성)
         const micTimeout = setTimeout(() => {
             if (isRecognizing) {
-                console.log('🎤 마이크 타임아웃 - 강제 종료');
                 recognition.stop();
                 isRecognizing = false;
                 micBtn?.classList.remove('mic-listening');
@@ -2707,7 +2619,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 🎤 10초 타임아웃 (iOS Safari 호환성)
         const micTimeout = setTimeout(() => {
             if (isRecognizing) {
-                console.log('🎤 마이크 타임아웃 - 강제 종료');
                 recognition.stop();
                 isRecognizing = false;
                 detailMicBtn?.classList.remove('mic-listening');
@@ -2851,7 +2762,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             // 🚨 2026-01-24: AI 처리 완료 - 플래그 해제
             isAIProcessing = false;
-            console.log('🔓 [AI완료] isAIProcessing = false (텍스트)');
         }
     }
 
@@ -2883,7 +2793,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 음성 목록이 아직 로드 안 됐으면 우선순위 첫 번째 이름 사용
         if (!voiceName && priorities.length > 0) {
             voiceName = priorities[0];
-            console.log('🎤 [음성] getVoices() 빈 배열 → 기본값 사용:', voiceName);
         }
 
         return { voiceLang: langCode, voiceName: voiceName };
@@ -2906,18 +2815,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentContent.latitude = window.currentGPS.latitude;
                 currentContent.longitude = window.currentGPS.longitude;
                 currentContent.locationName = window.currentGPS.locationName;
-                console.log('📍 GPS 데이터 저장:', window.currentGPS);
             }
 
             // 🎤 현재 TTS 음성 정보 저장 (저장 시점의 음성 유지)
             const voiceInfo = getCurrentVoiceInfo();
             currentContent.voiceLang = voiceInfo.voiceLang;
             currentContent.voiceName = voiceInfo.voiceName;
-            console.log('🎤 음성 정보 저장:', voiceInfo);
 
             // ✅ 2025-12-15: 서버 먼저 저장 → 성공 시에만 로컬 저장 (DB 일관성 보장)
             // 1. 서버 DB 먼저 저장
-            console.log('📦 guides DB 저장 시작...');
             const userLang = localStorage.getItem('appLanguage') || 'ko';
             const tempLocalId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -2957,7 +2863,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('서버 ID를 받지 못했습니다');
             }
 
-            console.log(`✅ guides DB 저장 완료: serverId=${serverId}`);
 
             // 2. 서버 저장 성공 후 IndexedDB 저장 (serverId 포함!)
             const itemToSave = {
@@ -2966,7 +2871,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 serverId: serverId // ✅ 서버 UUID 저장 (공유 시 사용)
             };
             await addItem(itemToSave);
-            console.log('📦 IndexedDB 저장 완료 (serverId 포함):', serverId);
 
             // 3. 저장 완료
             showToast("저장 완료!");
@@ -2992,15 +2896,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const downloadSelectedBtnContainer = document.getElementById('downloadSelectedBtnContainer');
-        console.log('🔵 [Selection Mode] Toggling:', isSelectionMode);
-        console.log('🔵 [Selection Mode] Download container exists:', !!downloadSelectedBtnContainer);
 
         if (isSelectionMode) {
             archiveGrid.classList.add('selection-mode');
             archiveHeader.classList.add('hidden');
             selectionHeader.classList.remove('hidden');
             downloadSelectedBtnContainer?.classList.remove('hidden'); // 다운로드 버튼 표시
-            console.log('✅ [Selection Mode] Download button shown');
             selectedItemIds = []; // ✅ Array 초기화
             updateSelectionUI();
         } else {
@@ -3008,7 +2909,6 @@ document.addEventListener('DOMContentLoaded', () => {
             archiveHeader.classList.remove('hidden');
             selectionHeader.classList.add('hidden');
             downloadSelectedBtnContainer?.classList.add('hidden'); // 다운로드 버튼 숨김
-            console.log('❌ [Selection Mode] Download button hidden');
             selectedItemIds = []; // ✅ Array 초기화
 
             // Remove selection styling from all items
@@ -3289,7 +3189,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (e) {
-                console.warn('사용자 정보 로드 실패:', e);
             }
 
             // 📍 위치 정보 가져오기 (첫 번째 가이드에서)
@@ -3304,7 +3203,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .filter(id => id); // null/undefined 제거
 
             if (guideIds.length !== currentShareItems.length) {
-                console.warn(`⚠️ 일부 아이템에 serverId 없음: ${currentShareItems.length - guideIds.length}개 누락`);
             }
 
             const requestData = {
@@ -3338,7 +3236,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 await navigator.clipboard.writeText(shareUrl);
                 copySuccess = true;
             } catch (clipboardError) {
-                console.warn('클립보드 복사 실패 (권한 없음):', clipboardError);
                 // 클립보드 복사 실패해도 계속 진행
             }
 
@@ -3498,7 +3395,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // 바로 렌더링 (localStorage 캐시 사용 안 함)
             renderFeaturedGallery(featuredPages);
         } catch (error) {
-            console.warn('Featured gallery not available yet:', error);
             featuredGallery?.classList.add('hidden');
         }
     }
@@ -3558,20 +3454,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🌐 2025.12.03 언어 파라미터 추가 - 외부공유 시 사용자 언어로 자동 번역
     // 핵심: 공유 페이지 링크를 클립보드에 복사 + 공유 모달 2번째 팝업 표시
     window.handleFeaturedDownload = async function (shareUrl, index) {
-        console.log('📥 Featured Gallery download clicked:', shareUrl, 'index:', index);
 
         // 🌐 사용자 언어 파라미터 추가 (한국어 제외)
         const translatedUrl = addLangToUrl(shareUrl);
-        console.log('🌐 Translated URL for sharing:', translatedUrl);
 
         // 📋 클립보드에 복사 시도 (언어 파라미터 포함)
         let copySuccess = false;
         try {
             await navigator.clipboard.writeText(translatedUrl);
             copySuccess = true;
-            console.log('✅ Link copied to clipboard:', translatedUrl);
         } catch (clipboardError) {
-            console.warn('클립보드 복사 실패 (권한 없음):', clipboardError);
         }
 
         // ✅ 공유 모달 2번째 팝업 표시 (성공 메시지)
@@ -3633,20 +3525,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🌐 2025.12.03 언어 파라미터 추가 - 사용자 언어로 공유페이지 자동 번역
     // 핵심: 인증 체크 후 직접 URL로 window.open() (about:blank 제거!)
     window.handleFeaturedClick = async function (shareUrl) {
-        console.log('🔵 Featured Gallery clicked:', shareUrl);
 
         // 🌐 사용자 언어 파라미터 추가 (한국어 제외)
         const translatedUrl = addLangToUrl(shareUrl);
-        console.log('🌐 Translated URL:', translatedUrl);
 
         try {
             // 1️⃣ 인증 상태 확인
             const response = await fetch('/api/auth/user', { credentials: 'include' });
-            console.log('🔵 Auth status:', response.ok, response.status);
 
             if (response.ok) {
                 // 2️⃣ 인증됨 → 직접 URL로 새 창 열기 (iOS Safari 호환!)
-                console.log('✅ Authenticated! Opening shared page in new window:', translatedUrl);
                 const newWindow = window.open(translatedUrl, '_blank');
 
                 if (!newWindow) {
@@ -3655,16 +3543,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 // 3️⃣ 미인증 → OAuth 모달 표시
-                console.log('❌ Not authenticated, showing auth modal');
-                console.log('💾 Saving original URL to localStorage (no language param):', shareUrl);
                 localStorage.setItem('pendingShareUrl', shareUrl);
-                console.log('✅ Saved! localStorage value:', localStorage.getItem('pendingShareUrl'));
 
                 // 인증 모달 표시
                 const authModal = document.getElementById('authModal');
                 if (authModal) {
                     authModal.classList.remove('hidden');
-                    console.log('📱 Auth modal displayed');
                 } else {
                     console.error('❌ Auth modal not found, falling back to Kakao login');
                     window.location.href = '/api/auth/kakao';
@@ -3672,16 +3556,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             // 에러 발생 시 인증 모달 표시
-            console.log('❌ Auth check failed, showing auth modal:', error);
-            console.log('💾 Saving original URL to localStorage (no language param):', shareUrl);
             localStorage.setItem('pendingShareUrl', shareUrl);
-            console.log('✅ Saved! localStorage value:', localStorage.getItem('pendingShareUrl'));
 
             // 인증 모달 표시
             const authModal = document.getElementById('authModal');
             if (authModal) {
                 authModal.classList.remove('hidden');
-                console.log('📱 Auth modal displayed');
             } else {
                 console.error('❌ Auth modal not found, falling back to Kakao login');
                 window.location.href = '/api/auth/kakao';
@@ -3791,7 +3671,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 voiceName: item.voiceName || null,
                 voiceQuery: item.voiceQuery || null
             };
-            console.log('🎤 [보관함] 저장된 음성 정보:', item.voiceLang, item.voiceName, item.voiceQuery);
 
             // 🔊 2025-12-11: 표준 초기화 - 이전 음성 즉시 중지 (showDetailPage 전에!)
             synth.cancel();
@@ -3889,7 +3768,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // 🌐 2025-12-24: 동적 콘텐츠 재번역 완료 대기 (언어 무관)
             await waitForRetranslation();
             if (retranslationPending) {
-                console.log('[TTS] 재번역 완료 후 TTS 시작');
             }
         }
 
@@ -3922,20 +3800,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fontEl) {
             // Google Translate <font> 태그에서 번역된 텍스트 가져오기
             translatedText = fontEl.innerText.trim() || fontEl.textContent.trim() || text;
-            console.log('[TTS] Google Translate <font> 태그에서 번역 텍스트 추출');
         } else {
             // <font> 태그가 없으면 innerText 시도
             translatedText = element.innerText.trim() || text;
         }
         const utterance = new SpeechSynthesisUtterance(translatedText);
-        console.log('[TTS] 번역된 텍스트 사용:', translatedText.substring(0, 30) + '...');
 
         // 🌐 2025-12-24: 앱 언어 최우선 (저장된 언어 무시, 번역된 텍스트에 맞춤)
         const userLang = localStorage.getItem('appLanguage') || 'ko';
         const langCodeMap = { 'ko': 'ko-KR', 'en': 'en-US', 'ja': 'ja-JP', 'zh-CN': 'zh-CN', 'fr': 'fr-FR', 'de': 'de-DE', 'es': 'es-ES' };
         const langCode = langCodeMap[userLang] || 'ko-KR';
 
-        console.log('[TTS] 앱 언어 우선:', userLang, '→', langCode);
 
         // 🌐 앱 언어 기준 음성 선택 (저장된 voiceName 무시)
         {
@@ -3952,7 +3827,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     || koVoices.find(v => v.name.includes('소라'))
                     || koVoices.find(v => v.name.includes('Heami'))
                     || koVoices[0];
-                console.log('🎤 [한국어] 음성:', targetVoice?.name || 'default');
             } else {
                 // 다른 6개 언어는 DB 기반 유지
                 const voiceConfig = getVoicePriorityFromDB(langCode);
@@ -3971,7 +3845,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!targetVoice) {
                     targetVoice = allVoices.find(v => v.lang.replace('_', '-').startsWith(langCode.substring(0, 2)));
                 }
-                console.log('[TTS] 언어:', langCode, '음성:', targetVoice?.name || 'default');
             }
 
             utterance.voice = targetVoice || null;
@@ -3992,7 +3865,6 @@ document.addEventListener('DOMContentLoaded', () => {
         utterance.onerror = (e) => {
             element.classList.remove('speaking');
             window.__ttsErrorCount = (window.__ttsErrorCount || 0) + 1;
-            console.warn('[TTS] 에러 발생:', e?.error, '횟수:', window.__ttsErrorCount);
             // 연속 3회 에러 시 완전 정지 (무한 루프 방지)
             if (window.__ttsErrorCount >= 3) {
                 console.error('[TTS] 연속 에러 3회 → TTS 정지');
@@ -4112,7 +3984,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (adminImagePromptTextarea) adminImagePromptTextarea.value = savedImagePrompt;
         if (adminTextPromptTextarea) adminTextPromptTextarea.value = savedTextPrompt;
 
-        console.log('📝 프롬프트 로드 완료 (이미지:', savedImagePrompt.substring(0, 50) + '...)');
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -4422,7 +4293,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (e) {
-                console.log('QR 리워드 미지급 (비회원 또는 오류)');
             }
             return false;
         }
@@ -4440,11 +4310,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navigator.clipboard && navigator.clipboard.writeText) {
             try {
                 await navigator.clipboard.writeText(appUrl);
-                console.log('✅ 클립보드 복사 성공 (writeText)');
                 await onCopySuccess();
                 return;
             } catch (e) {
-                console.warn('writeText 실패, fallback 시도:', e);
             }
         }
 
@@ -4461,12 +4329,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(textArea);
 
             if (success) {
-                console.log('✅ 클립보드 복사 성공 (execCommand)');
                 await onCopySuccess();
                 return;
             }
         } catch (e) {
-            console.warn('execCommand 실패:', e);
         }
 
         // 모든 방법 실패
@@ -4848,7 +4714,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             const { page, guides } = data;
 
-            console.log('📊 편집 데이터:', { page, guides, guidesCount: guides?.length });
 
             // 2. 모달 입력 필드 채우기
             document.getElementById('editTitle').value = page.name || '';
@@ -4981,7 +4846,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localStorage.setItem('customImagePrompt', imagePrompt);
         localStorage.setItem('customTextPrompt', textPrompt);
-        console.log('💾 프롬프트 저장 완료');
         showToast('프롬프트가 저장되었습니다.');
     }
 
@@ -5159,7 +5023,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 언어 변경 시 저장 + Google Translate 적용
     settingsLanguageSelect?.addEventListener('change', (e) => {
         const selectedLang = e.target.value;
-        console.log('🌐 언어 변경:', selectedLang);
 
         // localStorage에 저장
         localStorage.setItem('appLanguage', selectedLang);
@@ -5174,7 +5037,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
             document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${domain}`;
-            console.log('🗑️ googtrans 쿠키 삭제 완료');
         } else {
             document.cookie = `googtrans=/ko/${selectedLang}; path=/; domain=${domain}`;
             document.cookie = `googtrans=/ko/${selectedLang}; path=/`;
@@ -5201,9 +5063,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🔓 테스트용 로그아웃 버튼
     const testLogoutBtn = document.getElementById('adminTestLogoutBtn');
     testLogoutBtn?.addEventListener('click', () => {
-        console.log('🔓 Test logout clicked');
         if (confirm('로그아웃하시겠습니까? (테스트용)')) {
-            console.log('✅ User confirmed, logging out...');
             // 🔧 관리자 상태 및 게스트 사용량 초기화
             localStorage.removeItem('adminAuthenticated');
             localStorage.removeItem('adminAuthTime');
@@ -5292,13 +5152,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auth Modal Event Listeners
     closeAuthModalBtn?.addEventListener('click', () => {
-        console.log('❌ 인증 취소 - 모달 닫기');
         authModal.classList.add('hidden');
         authModal.classList.add('pointer-events-none');
         authModal.classList.remove('pointer-events-auto');
         // 대기 중인 URL 삭제 (배포본과 동일)
         localStorage.removeItem('pendingShareUrl');
-        console.log('🗑️ pendingShareUrl 삭제 완료');
     });
 
     // ═══════════════════════════════════════════════════════════════
@@ -5332,7 +5190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     googleLoginBtn?.addEventListener('click', () => {
-        console.log('🔵 Google 로그인');
 
         // 모바일/PC 모두 새 창 열기 (상태 유지 위해!)
         const width = 500;
@@ -5353,7 +5210,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     kakaoLoginBtn?.addEventListener('click', () => {
-        console.log('🔵 Kakao 로그인');
 
         // 모바일/PC 모두 새 창 열기 (상태 유지 위해!)
         const width = 500;
@@ -5378,7 +5234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/api/auth/user', { credentials: 'include' });
             if (response.ok) {
-                console.log('✅ 인증 성공!');
                 // 인증 모달 닫기
                 authModal?.classList.add('hidden');
 
@@ -5387,12 +5242,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // pendingShareUrl이 있으면 새 창에서 열기 (현재 언어로 다시 적용!)
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
                 if (pendingUrl) {
-                    console.log('🎯 Opening pending URL with current language:', pendingUrl);
                     localStorage.removeItem('pendingShareUrl');
 
                     // 🌐 인증 후 현재 사용자 언어로 URL 다시 적용
                     const translatedUrl = addLangToUrl(pendingUrl);
-                    console.log('🌐 Translated URL after auth:', translatedUrl);
 
                     const newWindow = window.open(translatedUrl, '_blank');
                     if (!newWindow) {
@@ -5404,7 +5257,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadFeaturedGallery();
                 }
             } else {
-                console.log('❌ 인증 실패');
             }
         } catch (error) {
             console.error('인증 확인 오류:', error);
@@ -5436,13 +5288,11 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await addItem(data);
             } catch (e) {
-                console.log('Sample already exists or error:', e);
             }
         }
 
         await renderArchive();
         showToast('샘플 이미지가 추가되었습니다!');
-        console.log('✅ 샘플 이미지 추가 완료!');
     };
 
     // URL 해시 변화 감지 (Featured 공유 페이지 리턴 버튼 지원)
@@ -5468,7 +5318,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
                 .then(reg => {
-                    console.log('SW registered: ', reg);
 
                     // 새 버전 감지 시 자동 업데이트 (무한 새로고침 방지)
                     reg.addEventListener('updatefound', () => {
@@ -5480,7 +5329,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     // 첫 설치일 경우 새로고침하지 않음
                                     return;
                                 }
-                                console.log('🔄 새 버전 업데이트 완료');
                             }
                         });
                     });
@@ -5494,10 +5342,8 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (isReloading) return;
             if (sessionStorage.getItem(swReloadKey)) {
-                console.log('🔄 Service Worker 업데이트됨 (이미 새로고침됨, 스킵)');
                 return;
             }
-            console.log('🔄 Service Worker 업데이트됨, 페이지 새로고침...');
             isReloading = true;
             sessionStorage.setItem(swReloadKey, 'true');
             window.location.reload();
