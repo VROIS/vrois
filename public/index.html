@@ -468,6 +468,30 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        .language-item.lang-loading {
+            position: relative;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .language-item.lang-loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: rgba(66, 133, 244, 0.25);
+            animation: lang-progress-fill 1.5s ease-out forwards;
+            z-index: 0;
+        }
+        .language-item.lang-loading>* {
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes lang-progress-fill {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
         .language-item:last-child {
             border-bottom: none;
             border-radius: 0 0 0.75rem 0.75rem;
@@ -611,41 +635,28 @@
                         } catch (e) { /* ignore - not logged in */ }
                     }
                     
-                    // 전역 언어 선택 함수 (onclick에서 호출) - 2단계 동작 + 캐시 삭제
+                    // 1터치 + 제미니 블루 프로그레스 바 → 자동 전환
                     window.selectLanguage = async function(lang) {
-                        
                         var items = document.querySelectorAll('.language-item');
                         var selectedItem = document.querySelector('.language-item[data-value="' + lang + '"]');
-                        
-                        // 🔧 2단계 동작: 이미 선택된 언어를 다시 터치하면 실행
-                        if (window.__selectedLang === lang) {
-                            // 🔧 2026-01-21: 한국어 포함 모든 언어 동일 동작 - 캐시 삭제 후 실행
-                            await Promise.all([clearAllCaches(), saveLanguageToServer(lang)]);
-                            executeLanguageSelection(lang);
-                            return;
-                        }
-                        
-                        // 1단계: 첫 터치 → 선택 + 캐시 삭제 (백그라운드)
-                        window.__selectedLang = lang;
-                        
-                        localStorage.setItem('appLanguage', lang);
-                        
-                        // 시각적 피드백 - 선택 표시 + 로딩 상태
+
+                        if (window.__langProcessing) return;
+                        window.__langProcessing = true;
+
                         items.forEach(function(item) {
-                            item.classList.remove('selected', 'ready-to-start', 'cache-clearing');
-                            if (item.getAttribute('data-value') === lang) {
-                                item.classList.add('selected', 'cache-clearing');
-                            }
+                            item.classList.remove('selected', 'ready-to-start', 'cache-clearing', 'lang-loading');
+                            item.style.pointerEvents = 'none';
                         });
-                        
-                        // 백그라운드: 캐시 삭제 + 서버 저장
-                        await Promise.all([clearAllCaches(), saveLanguageToServer(lang)]);
-                        
-                        // 로딩 완료 → ready-to-start 상태
                         if (selectedItem) {
-                            selectedItem.classList.remove('cache-clearing');
-                            selectedItem.classList.add('ready-to-start');
+                            selectedItem.classList.add('selected', 'lang-loading');
                         }
+
+                        localStorage.setItem('appLanguage', lang);
+
+                        await Promise.all([clearAllCaches(), saveLanguageToServer(lang)]);
+
+                        window.__langProcessing = false;
+                        executeLanguageSelection(lang);
                     };
                     
                     // 실제 언어 선택 실행 함수
