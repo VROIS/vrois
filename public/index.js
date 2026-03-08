@@ -2090,7 +2090,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let _lastAuthCheck = 0;
     async function checkAuthStatusAndCloseModal() {
 
-        // ⚠️ 2025.11.06: OAuth 리다이렉트 후 플래그 확인 (모바일 대응)
+        // ⚠️ 수정금지(승인필요): WebView OAuth 리다이렉트 후 mainPage 직행 로직
+        // Android WebView에서 팝업 차단 시 전체 페이지 OAuth 이동 → 콜백에서 auth_success 플래그 설정
+        // 페이지 재로드 후 이 플래그를 감지하여 모달 닫기 + mainPage(카메라+4입력)로 자동 이동
         const authSuccess = localStorage.getItem('auth_success');
         if (authSuccess === 'true') {
             authModal?.classList.add('hidden');
@@ -2103,9 +2105,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (pendingUrl) {
                 localStorage.removeItem('pendingShareUrl');
                 window.open(pendingUrl, '_blank');
+            } else {
+                // ⚠️ 수정금지(승인필요): OAuth 완료 후 mainPage(카메라+입력) 직행
+                handleStartFeaturesClick();
             }
             _lastAuthCheck = Date.now();
-            return; // 플래그로 처리했으면 API 호출 스킵
+            return;
         }
 
         // 30초 디바운스 — focus/visibilitychange 과다 호출 방지

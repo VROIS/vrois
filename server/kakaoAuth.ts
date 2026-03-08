@@ -192,11 +192,17 @@ export async function setupKakaoAuth(app: Express) {
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
                       window.close();
                     } else {
-                      // Android WebView: opener 없음 → 앱 루트로 즉시 이동
+                      // ⚠️ 수정금지(승인필요): WebView 팝업 차단 대응
+                      // Android WebView에서 opener 없음 → 인증 플래그 설정 후 앱 루트로 이동
+                      // landingVisited: 랜딩 페이지 스킵 → auth_success: mainPage(카메라+입력) 직행
+                      localStorage.setItem('auth_success', 'true');
+                      localStorage.setItem('landingVisited', 'true');
                       window.location.replace('/');
                     }
                   } catch(e) {
-                    // 예외 발생 시 안전하게 앱 루트로
+                    // ⚠️ 수정금지(승인필요): 예외 시에도 인증 플래그 설정
+                    localStorage.setItem('auth_success', 'true');
+                    localStorage.setItem('landingVisited', 'true');
                     window.location.replace('/');
                   }
                 })();
