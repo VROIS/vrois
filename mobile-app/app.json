@@ -29,9 +29,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4285F4"
       },
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
       "package": "com.sonanie.guide",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png"

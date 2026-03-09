@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showChargeModal() {
         showToast('크레딧이 부족합니다. 프로필에서 충전해주세요.');
         setTimeout(() => {
-            window.open('/profile.html', '_blank');
+            openPageOverlay('/profile.html');
         }, 1500);
     }
 
@@ -1119,16 +1119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     <!-- 갤러리 뷰 -->
     <div id="gallery-view">
-        ${isFeatured ? `
-        <!-- 🔙 추천 갤러리 전용 리턴 버튼 (왼쪽 상단, 앱과 통일) -->
-        <div style="position: sticky; top: 0; z-index: 100; height: 60px; display: flex; align-items: center; padding: 0 1rem; background: #4285F4;">
-            <button onclick="window.location.href='${appOrigin}/#archive'" style="width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(255, 255, 255, 0.95); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.3s;" aria-label="보관함으로 돌아가기">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                </svg>
-            </button>
-        </div>
-        ` : ''}
+        <!-- ⚠️ 수정금지(승인필요): 2026-03-08 ← 리턴 버튼 제거, X 닫기(closeWindowBtn)만 유지 -->
         <div class="gallery-grid">
             ${galleryItemsHTML}
         </div>
@@ -1533,6 +1524,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, duration);
     }
+
+    // ⚠️ 수정금지(승인필요): 독립페이지 SPA 오버레이 (window.open 대체)
+    // profile.html, user-guide.html을 iframe으로 인앱 표시
+    function openPageOverlay(url) {
+        const overlay = document.getElementById('pageOverlay');
+        const iframe = document.getElementById('pageOverlayIframe');
+        if (!overlay || !iframe) return;
+        iframe.src = url;
+        overlay.classList.remove('hidden');
+    }
+    window.openPageOverlay = openPageOverlay;
+
+    function closePageOverlay() {
+        const overlay = document.getElementById('pageOverlay');
+        const iframe = document.getElementById('pageOverlayIframe');
+        if (!overlay || !iframe) return;
+        iframe.src = '';
+        overlay.classList.add('hidden');
+    }
+    window.closePageOverlay = closePageOverlay;
+
+    // ⚠️ 수정금지(승인필요): 독립페이지에서 닫기 요청 수신 (postMessage)
+    window.addEventListener('message', function(event) {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type === 'closeOverlay') {
+            closePageOverlay();
+        }
+    });
 
     // --- Page Control ---
     function showPage(pageToShow) {
@@ -1944,7 +1963,7 @@ document.addEventListener('DOMContentLoaded', () => {
     profileBtn?.addEventListener('click', async () => {
         const user = await checkUserAuth();
         if (!user) {
-            window.open('/profile.html', '_blank');
+            openPageOverlay('/profile.html');
             return;
         }
 
@@ -1959,10 +1978,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 notificationModalOpenedFromProfile = true;
                 openNotificationModal();
             } else {
-                window.open('/profile.html', '_blank');
+                openPageOverlay('/profile.html');
             }
         } catch (error) {
-            window.open('/profile.html', '_blank');
+            openPageOverlay('/profile.html');
         }
     });
 
@@ -1976,8 +1995,14 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("데이터베이스를 열 수 없습니다. 앱이 정상적으로 작동하지 않을 수 있습니다.");
         }
 
-        // OAuth 인증 실패 체크 (UX 개선)
+        // ⚠️ 수정금지(승인필요): beta.html에서 리다이렉트 시 betaSource 플래그 설정
         const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('beta') === '1') {
+            sessionStorage.setItem('betaSource', '1');
+            window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+        }
+
+        // OAuth 인증 실패 체크 (UX 개선)
         if (urlParams.get('auth') === 'failed') {
             console.error('❌ OAuth 인증 실패 감지');
             showToast('로그인에 실패했습니다. 다시 시도해주세요.');

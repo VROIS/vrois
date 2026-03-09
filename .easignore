@@ -1,4 +1,7 @@
-# Exclude large directories
+# ⚠️ 수정금지(승인필요): EAS 빌드 시 업로드 제외 목록
+# mobile-app/ 폴더만 업로드, 나머지 전부 제외
+
+# 대형 디렉토리
 node_modules/
 public/
 server/
@@ -10,7 +13,27 @@ attached_assets/
 shared_guidebooks/
 .git/
 
-# Exclude markdown files
-*.md
+# 도구/설정 디렉토리
+.agents/
+.claude/
+.replit/
+.vscode/
+.config/
+docs/
 
-# Keep mobile-app folder (don't exclude it)
+# 파일 패턴
+*.md
+*.ts
+*.html
+*.css
+
+# 루트 설정 파일
+drizzle.config.ts
+tsconfig.json
+vite.config.ts
+theme.json
+tailwind.config.ts
+postcss.config.js
+package-lock.json
+
+# mobile-app/ 폴더는 제외하지 않음 (빌드 대상)

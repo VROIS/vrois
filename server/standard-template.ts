@@ -471,6 +471,13 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
     </style>
 </head>
 <body>
+    <!-- ⚠️ 수정금지(승인필요): X 닫기 버튼 (우측 상단, window.close) -->
+    <button id="closeWindowBtn" onclick="window.close()" title="페이지 닫기" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); border-radius: 50%; color: #4285F4; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+
     <!-- 헤더 (메타데이터) -->
     <div class="header">
         <h1>${escapeHTML(title)}</h1>
@@ -483,23 +490,8 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
     
     <!-- 갤러리 뷰 -->
     <div id="gallery-view">
-        ${isFeatured ? `
-        <!-- 🔙 추천 갤러리 전용 리턴 버튼 (왼쪽 상단, 창 닫기) -->
-        <div style="position: sticky; top: 0; z-index: 100; height: 60px; display: flex; align-items: center; padding: 0 1rem; background: #4285F4;">
-            <button onclick="window.close()" style="width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(255, 255, 255, 0.95); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.3s;" aria-label="창 닫기">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                </svg>
-            </button>
-        </div>
-        ` : `
-        <!-- 🔙 일반 공유페이지 리턴 버튼 (우측 상단 고정, 창 닫기) -->
-        <button onclick="window.close()" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.2s ease;" aria-label="창 닫기">
-            <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-        </button>
-        `}
+        <!-- ⚠️ 수정금지(승인필요): X 닫기 버튼 1개만 유지 (← 리턴 버튼 제거, 리다이렉션 금지) -->
+        <!-- 2026-03-08: featured/일반 공유페이지 모두 동일한 X 닫기 버튼 사용 -->
         <div class="gallery-grid">
             ${galleryItemsHTML}
         </div>

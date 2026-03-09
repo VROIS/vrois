@@ -985,8 +985,13 @@
             }
         }
 
+        // ⚠️ 수정금지(승인필요): SPA 오버레이 닫기 (iframe 내부 → 부모에 postMessage)
         document.getElementById('backBtn').addEventListener('click', () => {
-            window.close();
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'closeOverlay' }, '*');
+            } else {
+                window.close();
+            }
         });
 
         function showAuthModal() {

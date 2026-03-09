@@ -361,21 +361,10 @@
         }
 
         function loginWithGoogle() {
-            // ⚠️ 수정금지(승인필요): 베타 테스터 가입 추적용 플래그
-            // OAuth 완료 후 index.js에서 이 플래그를 감지하여 /api/beta/play-register 자동 호출
+            // ⚠️ 수정금지(승인필요): 베타 테스터 가입 — 메인 앱으로 리다이렉트 (WebView 팝업 차단 우회)
+            // 메인 앱에서 OAuth 로그인 후 betaSource 감지 → /api/beta/play-register 자동 호출
             sessionStorage.setItem('betaSource', '1');
-
-            const width = 500, height = 600;
-            const left = Math.round((screen.width - width) / 2);
-            const top = Math.round((screen.height - height) / 2);
-            const popup = window.open(
-                '/api/auth/google',
-                'google_oauth',
-                `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
-            );
-            if (!popup || popup.closed) {
-                window.location.href = '/api/auth/google';
-            }
+            window.location.href = '/?beta=1';
         }
 
         async function registerAndShowSuccess() {

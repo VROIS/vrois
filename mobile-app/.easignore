@@ -1,6 +1,29 @@
+# ⚠️ 수정금지(승인필요): EAS 빌드 시 업로드 제외 목록
+# EAS는 git 루트(상위 폴더) 전체를 압축하므로 mobile-app 외 파일 제외 필수
 node_modules
 .git
 *.log
 *.aab
 *.apk
 store-assets
+
+# 상위 프로젝트 폴더 제외 (서버, 문서, 설정 등)
+server
+public
+shared
+docs
+.agents
+.replit
+.claude
+.vscode
+.config
+attached_assets
+dist
+*.md
+drizzle.config.ts
+tsconfig.json
+vite.config.ts
+package-lock.json
+theme.json
+tailwind.config.ts
+postcss.config.js

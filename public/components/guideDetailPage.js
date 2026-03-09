@@ -807,7 +807,7 @@ const guideDetailPage = {
         }
     },
 
-    // 음성 정지
+    // ⚠️ 수정금지(승인필요): 음성 정지 — iOS Safari paused 고착 방지 포함
     _stopAudio: function () {
         // 🔒 2025-12-11: 이벤트 핸들러 먼저 제거 (race condition 방지)
         if (this._state.currentUtterance) {
@@ -819,6 +819,11 @@ const guideDetailPage = {
         if (this._state.synth.speaking) {
             const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
             if (!isAndroidChrome) { this._state.synth.pause(); }
+            this._state.synth.cancel();
+        }
+        // ⚠️ 2026-03-09: iOS Safari에서 cancel() 후 paused=true 고착 방지 (index.js resetSpeechState 동일 패턴)
+        if (this._state.synth.paused) {
+            this._state.synth.resume();
             this._state.synth.cancel();
         }
         this._updateAudioButtonIcon(false);

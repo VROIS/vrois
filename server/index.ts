@@ -159,23 +159,18 @@ app.get('/s/:id', async (req, res) => {
             `href='$1$2?ref=${creatorReferralCode}'`);
       }
       
-      // 3. X 버튼 → 리턴 버튼 교체 (우측 상단 고정, 기존 X버튼 자리)
-      const returnButtonHTML = `
-        <button id="shareReturnBtn" onclick="window.close()" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.2s ease;" aria-label="창 닫기">
-            <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-        </button>`;
-      
-      // X 버튼(closeWindowBtn) 제거 - 다양한 HTML 구조 대응
-      result = result.replace(/<button[^>]*id\s*=\s*["']?closeWindowBtn["']?[^>]*>[\s\S]*?<\/button>/gi, '');
-      
-      // 리턴 버튼 삽입 (없으면) - </body> 앞에 추가
-      // ⚠️ detail-back 버튼이 있는 페이지(상세페이지)에는 추가하지 않음 (중복 방지)
-      if (!result.includes('shareReturnBtn') && !result.includes('detail-back')) {
-        result = result.replace(/<\/body>/i, returnButtonHTML + '</body>');
+      // ⚠️ 수정금지(승인필요): 2026-03-08 X 닫기 버튼만 유지
+      // ← 리턴 버튼 주입 제거. closeWindowBtn(X 버튼)은 template에서 생성, 그대로 유지.
+      // 기존 DB에 저장된 HTML 중 ← 리턴(shareReturnBtn)이 있으면 제거
+      result = result.replace(/<button[^>]*id\s*=\s*["']?shareReturnBtn["']?[^>]*>[\s\S]*?<\/button>/gi, '');
+      // 기존 DB에 저장된 HTML 중 featured ← sticky bar가 있으면 제거
+      result = result.replace(/<div[^>]*style="[^"]*position:\s*sticky[^"]*background:\s*#4285F4[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '');
+      // 기존 DB HTML에 closeWindowBtn이 없으면 추가 (이전 런타임이 제거한 경우 대비)
+      if (!result.includes('closeWindowBtn')) {
+        const closeButtonHTML = `<button id="closeWindowBtn" onclick="window.close()" title="페이지 닫기" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); border-radius: 50%; color: #4285F4; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: none;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>`;
+        result = result.replace(/<body>/i, '<body>' + closeButtonHTML);
       }
-      
+
       // 4. TTS 음성 최적화 스크립트 주입 (한국어 하드코딩 + 다른언어 저장된 voiceName)
       const ttsVoiceOptimizationScript = `
     <!-- 🔊 2025.12.15: TTS 음성 최적화 (한국어 하드코딩: Yuna→Sora→유나→소라→Heami) -->
