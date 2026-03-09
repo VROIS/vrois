@@ -361,10 +361,13 @@
         }
 
         function loginWithGoogle() {
-            // ⚠️ 수정금지(승인필요): 베타 테스터 가입 — 메인 앱으로 리다이렉트 (WebView 팝업 차단 우회)
-            // 메인 앱에서 OAuth 로그인 후 betaSource 감지 → /api/beta/play-register 자동 호출
-            sessionStorage.setItem('betaSource', '1');
-            window.location.href = '/?beta=1';
+            // ⚠️ 수정금지(승인필요) — 부모(메인앱)에게 OAuth 요청: authModal이 beta 위에 뜸 (Claude Opus 4.6, 2026-03-09)
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'requestOAuth', source: 'beta' }, '*');
+            } else {
+                // 독립 브라우저에서 직접 접근 시 메인 앱으로 이동
+                window.location.href = '/?beta=1';
+            }
         }
 
         async function registerAndShowSuccess() {
@@ -386,9 +389,10 @@
             }
         }
 
+        // ⚠️ 수정금지(승인필요) — 부모(메인앱)에서 인증 완료 수신 → phase 2 표시 (Claude Opus 4.6, 2026-03-09)
         window.addEventListener('message', (event) => {
             if (event.origin !== window.location.origin) return;
-            if (event.data?.type === 'oauth_success') {
+            if (event.data?.type === 'authComplete' && event.data?.source === 'beta') {
                 registerAndShowSuccess();
             }
         });

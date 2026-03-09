@@ -1545,11 +1545,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.closePageOverlay = closePageOverlay;
 
-    // ⚠️ 수정금지(승인필요): 독립페이지에서 닫기 요청 수신 (postMessage)
+    // ⚠️ 수정금지(승인필요) — 독립페이지 postMessage 수신: closeOverlay + requestOAuth (Claude Opus 4.6, 2026-03-09)
     window.addEventListener('message', function(event) {
         if (event.origin !== window.location.origin) return;
         if (event.data?.type === 'closeOverlay') {
             closePageOverlay();
+        }
+        // ⚠️ 수정금지(승인필요) — beta.html에서 OAuth 요청 수신: authModal 표시 + betaSource 설정 (Claude Opus 4.6, 2026-03-09)
+        if (event.data?.type === 'requestOAuth' && event.data?.source === 'beta') {
+            sessionStorage.setItem('betaSource', '1');
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.classList.remove('hidden');
+                authModal.classList.remove('pointer-events-none');
+                authModal.classList.add('pointer-events-auto');
+            }
         }
     });
 
@@ -2151,7 +2161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 authModal?.classList.add('pointer-events-none');
                 authModal?.classList.remove('pointer-events-auto');
 
-                // /beta 경유 로그인: 베타 등록 백그라운드 처리
+                // ⚠️ 수정금지(승인필요) — beta 경유 로그인: 베타 등록 + iframe에 인증완료 알림 (Claude Opus 4.6, 2026-03-09)
                 const betaSource = sessionStorage.getItem('betaSource');
                 if (betaSource === '1') {
                     sessionStorage.removeItem('betaSource');
@@ -2159,6 +2169,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ lang: localStorage.getItem('appLanguage') || 'ko' })
+                    }).then(() => {
+                        // beta iframe에 인증 완료 알림 → phase 2 표시
+                        const iframe = document.getElementById('pageOverlayIframe');
+                        if (iframe?.contentWindow) {
+                            iframe.contentWindow.postMessage({ type: 'authComplete', source: 'beta' }, '*');
+                        }
                     }).catch(() => { });
                 }
 
@@ -3572,13 +3588,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/auth/user', { credentials: 'include' });
 
             if (response.ok) {
-                // 2️⃣ 인증됨 → 직접 URL로 새 창 열기 (iOS Safari 호환!)
-                const newWindow = window.open(translatedUrl, '_blank');
-
-                if (!newWindow) {
-                    console.error('❌ 팝업 차단됨! (Fallback: 현재 탭 리다이렉트)');
-                    window.location.href = translatedUrl;
-                }
+                // ⚠️ 수정금지(승인필요) — 공유페이지를 SPA 오버레이로 열기 (Claude Opus 4.6, 2026-03-09)
+                openPageOverlay(translatedUrl);
             } else {
                 // 3️⃣ 미인증 → OAuth 모달 표시
                 localStorage.setItem('pendingShareUrl', shareUrl);

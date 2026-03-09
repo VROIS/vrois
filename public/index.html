@@ -1604,7 +1604,8 @@
 
             <!-- 🔒 대시보드 링크 -->
             <div id="adminDashboardLink" class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-600">
-                <button onclick="window.open('./admin-dashboard.html')" class="block w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 text-center font-bold text-lg shadow-lg transition-all transform hover:scale-105" data-testid="button-dashboard">
+                <!-- ⚠️ 수정금지(승인필요) — 관리자 대시보드 SPA 오버레이로 열기 (Claude Opus 4.6, 2026-03-09) -->
+                <button onclick="openPageOverlay('./admin-dashboard.html')" class="block w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 text-center font-bold text-lg shadow-lg transition-all transform hover:scale-105" data-testid="button-dashboard">
                     📊 관리자 대시보드 열기
                 </button>
                 <p class="text-xs text-gray-500 mt-2 text-center">실시간 통계 및 분석 대시보드</p>

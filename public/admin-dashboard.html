@@ -245,7 +245,8 @@
         <!-- 헤더 -->
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
-            <button onclick="window.close()"
+            <!-- ⚠️ 수정금지(승인필요) — 닫기: iframe이면 postMessage, 아니면 window.close() (Claude Opus 4.6, 2026-03-09) -->
+            <button onclick="if(window.parent!==window){window.parent.postMessage({type:'closeOverlay'},'*')}else{window.close()}"
                 class="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition">
                 닫기
             </button>
