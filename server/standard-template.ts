@@ -483,23 +483,12 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
     
     <!-- 갤러리 뷰 -->
     <div id="gallery-view">
-        ${isFeatured ? `
-        <!-- ⚠️ 수정금지(승인필요) — 추천갤러리 닫기 버튼: iframe이면 postMessage, 아니면 window.close() (Claude Opus 4.6, 2026-03-09) -->
-        <div style="position: sticky; top: 0; z-index: 100; height: 60px; display: flex; align-items: center; padding: 0 1rem; background: #4285F4;">
-            <button onclick="if(window.parent!==window){window.parent.postMessage({type:'closeOverlay'},'*')}else{window.close()}" style="width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(255, 255, 255, 0.95); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.3s;" aria-label="창 닫기">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                </svg>
-            </button>
-        </div>
-        ` : `
-        <!-- ⚠️ 수정금지(승인필요) — 일반 공유페이지 닫기 버튼: iframe이면 postMessage, 아니면 window.close() (Claude Opus 4.6, 2026-03-09) -->
-        <button onclick="if(window.parent!==window){window.parent.postMessage({type:'closeOverlay'},'*')}else{window.close()}" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.2s ease;" aria-label="창 닫기">
+        <!-- ⚠️ 수정금지(승인필요) — 공유페이지 X 닫기 버튼: 갤러리 뷰에서만 표시, 상세 뷰 진입 시 숨김 (Claude Opus 4.6, 2026-03-09) -->
+        <button id="gallery-close" onclick="if(window.parent!==window){window.parent.postMessage({type:'closeOverlay'},'*')}else{window.close()}" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.2s ease;" aria-label="닫기">
             <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
-        `}
         <div class="gallery-grid">
             ${galleryItemsHTML}
         </div>
@@ -907,9 +896,10 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
                 // 텍스트 설정
                 document.getElementById('detail-description').textContent = itemData.description;
                 
-                // UI 표시
+                // ⚠️ 수정금지(승인필요) — 상세 뷰 진입: 갤러리 X 숨기고 상세 뷰 표시 (Claude Opus 4.6, 2026-03-09)
                 galleryView.classList.add('hidden');
                 header.classList.add('hidden');
+                var gc = document.getElementById('gallery-close'); if (gc) gc.style.display = 'none';
                 detailView.classList.remove('hidden');
                 document.getElementById('detail-footer').classList.remove('hidden');
                 
@@ -933,6 +923,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
         }
         
         // 뒤로 가기
+        // ⚠️ 수정금지(승인필요) — 상세 뷰 닫기: 갤러리 X 복원 + 갤러리 뷰 표시 (Claude Opus 4.6, 2026-03-09)
         document.getElementById('detail-back').addEventListener('click', () => {
             stopAudio();
             detailView.classList.add('hidden');
@@ -940,6 +931,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
             document.getElementById('detail-footer').classList.add('hidden');
             header.classList.remove('hidden');
             galleryView.classList.remove('hidden');
+            var gc = document.getElementById('gallery-close'); if (gc) gc.style.display = 'flex';
         });
         
         // 텍스트 토글 버튼 (앱과 동일한 로직)
