@@ -141,7 +141,9 @@ Prioritizes specific voice names for Korean (Yuna, Sora, Heami) and uses a `voic
 - **safe-area CSS**: standard-template.ts `.footer-safe-area` 2곳에 `padding-bottom: env(safe-area-inset-bottom)` 추가 (shorthand 뒤 배치)
 - **App.js WebView 설정**: `injectedJavaScript`(safe-area CSS), `mediaCapturePermissionGrantType`, `PermissionsAndroid.requestMultiple()`, `sharedCookiesEnabled`, `thirdPartyCookiesEnabled`
 - **app.json 권한**: `android.permissions: ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION"]`
-- **V1 재생성**: 배포 후 관리자 대시보드에서 실행 필요 (standard-template 변경 반영)
+- **V1 재생성**: 개발본 39개 완료, 배포본은 배포 후 재실행 필요
+- **Stripe 결제 복귀 수정**: success_url/cancel_url을 루트(/)로 변경 → SPA 메인 복귀 → 프로필 오버레이 자동 열기
+- **관리자 충전 버튼 수정**: localStorage 기반 isAdmin() 제거 → 서버 API 응답 기반 판단, 관리자도 충전 버튼 표시
 
 ### 향후 계획
 - Google Play 비공개 테스트 14일 대기 (목표: 2026년 3월 초 정식 출시)

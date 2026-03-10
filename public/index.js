@@ -3,6 +3,27 @@ import * as gemini from './geminiService.js';
 import { optimizeImage } from './imageOptimizer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ⚠️ 수정금지(승인필요) — Stripe 결제 후 SPA 복귀 감지 (2026-03-10)
+    const paymentParams = new URLSearchParams(window.location.search);
+    const paymentStatus = paymentParams.get('payment');
+    if (paymentStatus) {
+        const sessionId = paymentParams.get('session_id');
+        window.history.replaceState({}, document.title, '/');
+        if (paymentStatus === 'success' && sessionId) {
+            setTimeout(() => {
+                if (typeof openPageOverlay === 'function') {
+                    openPageOverlay('/profile.html?payment=success&session_id=' + sessionId);
+                }
+            }, 500);
+        } else if (paymentStatus === 'cancel') {
+            setTimeout(() => {
+                if (typeof openPageOverlay === 'function') {
+                    openPageOverlay('/profile.html?payment=cancel');
+                }
+            }, 500);
+        }
+    }
+
     // 📊 사용자 활동 로그 기록 (2026-02-01)
     // 세션 ID 생성 또는 재사용
     let sessionId = sessionStorage.getItem('activity_session_id');

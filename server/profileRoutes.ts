@@ -55,6 +55,7 @@ router.get('/profile', async (req: Request, res: Response) => {
         profileImageUrl: user?.profileImageUrl,
         provider: user?.provider,
         referralCode: user?.referralCode,
+        isAdmin: user?.isAdmin || false,
       },
       credits: balance,
       stats,
@@ -271,8 +272,9 @@ router.post('/profile/checkout', async (req: Request, res: Response) => {
         },
       ],
       mode: 'payment',
-      success_url: `${baseUrl}/profile.html?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/profile.html?payment=cancel`,
+      // ⚠️ 수정금지(승인필요) — Stripe 결제 후 SPA 메인으로 복귀 (2026-03-10)
+      success_url: `${baseUrl}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/?payment=cancel`,
       customer_email: user?.email || undefined,
       metadata: {
         userId,

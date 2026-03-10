@@ -674,13 +674,8 @@
             return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
         }
 
-        function isAdmin() {
-            return localStorage.getItem('adminAuthenticated') === 'true';
-        }
-
+        // ⚠️ 수정금지(승인필요) — 관리자 판단: 서버 API 응답 기반 (localStorage 아님) (2026-03-10)
         async function loadProfile() {
-            const adminMode = isAdmin();
-
             try {
                 const response = await fetch('/api/profile', { credentials: 'include' });
                 const data = await response.json();
@@ -688,11 +683,10 @@
                 document.getElementById('profileLoading').classList.add('hidden');
                 document.getElementById('profileContent').classList.remove('hidden');
 
-                // 관리자 모드 UI 적용
+                // 관리자 모드 UI 적용 (서버 응답 기반)
+                const adminMode = data.user?.isAdmin === true;
                 if (adminMode) {
                     document.getElementById('creditsAmount').textContent = '∞';
-                    document.getElementById('chargeBtn').classList.add('hidden');
-                    document.getElementById('pricingSection').classList.add('hidden');
 
                     // 관리자 배지 추가 (userName 옆에)
                     const userNameEl = document.getElementById('userName');
