@@ -583,7 +583,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
         
         // Web Speech API
         const synth = window.speechSynthesis;
-        let voices = [];
+        let _tplVoices = [];
         let currentUtterance = null;
         
         // ═══════════════════════════════════════════════════════════════
@@ -697,7 +697,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
         loadVoiceConfigsFromDB();
         
         function populateVoiceList() {
-            voices = synth.getVoices();
+            _tplVoices = synth.getVoices();
         }
         
         function stopAudio() {
@@ -1355,7 +1355,7 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
     <script>
         // Web Speech API
         const synth = window.speechSynthesis;
-        let voices = [];
+        let _tplVoices = [];
         let currentUtterance = null;
         
         // ═══════════════════════════════════════════════════════════════
@@ -1469,7 +1469,7 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
         loadVoiceConfigsFromDB();
         
         function populateVoiceList() {
-            voices = synth.getVoices();
+            _tplVoices = synth.getVoices();
         }
         
         function stopAudio() {

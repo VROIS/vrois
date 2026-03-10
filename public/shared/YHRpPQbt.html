@@ -478,7 +478,7 @@
         
         // Web Speech API
         const synth = window.speechSynthesis;
-        let voices = [];
+        let _tplVoices = [];
         let currentUtterance = null;
         
         // ═══════════════════════════════════════════════════════════════
@@ -592,7 +592,7 @@
         loadVoiceConfigsFromDB();
         
         function populateVoiceList() {
-            voices = synth.getVoices();
+            _tplVoices = synth.getVoices();
         }
         
         function stopAudio() {
