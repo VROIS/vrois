@@ -235,7 +235,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
             }
         })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>${escapeHTML(title)} - 손안에 가이드</title>
     <link rel="manifest" href="data:application/json;base64,${utf8ToBase64(JSON.stringify({
       name: title,
@@ -292,6 +292,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
             background: transparent;
             z-index: 25;
         }
+        /* ⚠️ 수정금지(승인필요) — 공유페이지 footer safe-area: 브라우저용 env() 추가 (2026-03-10) */
         .footer-safe-area { 
             width: 100%; 
             height: 100px; 
@@ -301,6 +302,7 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
             justify-content: space-around; 
             align-items: center; 
             padding: 0 1rem;
+            padding-bottom: env(safe-area-inset-bottom, 0px); /* ⚠️ 수정금지(승인필요) — safe-area 브라우저 CSS (2026-03-10) */
         }
         
         /* 텍스트 오버레이 */
@@ -444,10 +446,11 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
             -webkit-box-orient: vertical;
         }
         
-        /* 갤러리 하단 버튼 */
+        /* ⚠️ 수정금지(승인필요) — 갤러리 하단 버튼: 브라우저용 safe-area 추가 (2026-03-10) */
         .gallery-footer {
             text-align: center;
             padding: 30px 15px;
+            padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
         }
         .app-button {
             display: inline-flex;
@@ -1064,7 +1067,7 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>${escapeHTML(locationName || '상세 가이드')} - 내손가이드</title>
     <meta property="og:title" content="${escapeHTML(locationName || '상세 가이드')} - 내손가이드">
     <meta property="og:description" content="${escapeHTML(description?.substring(0, 100) || '나만의 여행 가이드')}">
@@ -1237,6 +1240,7 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
             background: transparent;
             z-index: 25;
         }
+        /* ⚠️ 수정금지(승인필요) — 공유페이지 footer safe-area: 브라우저용 env() 추가 (2026-03-10) */
         .footer-safe-area { 
             width: 100%; 
             height: 100px; 
@@ -1246,6 +1250,7 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
             justify-content: center; 
             align-items: center; 
             padding: 0 1rem;
+            padding-bottom: env(safe-area-inset-bottom, 0px); /* ⚠️ 수정금지(승인필요) — safe-area 브라우저 CSS (2026-03-10) */
             gap: 1.5rem;
         }
         

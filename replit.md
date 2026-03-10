@@ -133,6 +133,16 @@ Prioritizes specific voice names for Korean (Yuna, Sora, Heami) and uses a `voic
 - **LSP 경고 3건**: Dream Studio 비디오 메타데이터 저장 시 `req.user?.id` 타입 오류 (동작에는 영향 없음)
 - **Analytics (지난 2주)**: 58개 고유 IP, 2월 11일 스파이크 (QR 배포로 30명 신규 가입), 응답 대부분 49ms 이하
 
+### 앱 최적화 적용 (2026-03-10)
+- **iframe 리다이렉트 수정**: `profile.html`의 `window.location.href` → `window.top.location.href` 일괄 치환 (Stripe, OAuth, mailto 5곳)
+- **pendingShareUrl 수정**: `index.js` 4곳에서 `window.open` → `openPageOverlay(addLangToUrl())` 변경
+- **openPageOverlay 미래 보호**: iframe `onload` 시 `<base target="_top">` 자동 주입
+- **viewport-fit=cover**: index.html, profile.html, standard-template.ts(2곳) 메타태그 추가
+- **safe-area CSS**: standard-template.ts `.footer-safe-area` 2곳에 `padding-bottom: env(safe-area-inset-bottom)` 추가 (shorthand 뒤 배치)
+- **App.js WebView 설정**: `injectedJavaScript`(safe-area CSS), `mediaCapturePermissionGrantType`, `PermissionsAndroid.requestMultiple()`, `sharedCookiesEnabled`, `thirdPartyCookiesEnabled`
+- **app.json 권한**: `android.permissions: ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION"]`
+- **V1 재생성**: 배포 후 관리자 대시보드에서 실행 필요 (standard-template 변경 반영)
+
 ### 향후 계획
 - Google Play 비공개 테스트 14일 대기 (목표: 2026년 3월 초 정식 출시)
 - Apple App Store 출시 검토 중 (Replit 대행 서비스 또는 직접 제출)

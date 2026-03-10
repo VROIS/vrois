@@ -1526,13 +1526,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ⚠️ 수정금지(승인필요): 독립페이지 SPA 오버레이 (window.open 대체)
-    // profile.html, user-guide.html을 iframe으로 인앱 표시
+    // ⚠️ 수정금지(승인필요) — profile.html, user-guide.html을 iframe으로 인앱 표시 + base target _top 자동 주입 (2026-03-10)
     function openPageOverlay(url) {
         const overlay = document.getElementById('pageOverlay');
         const iframe = document.getElementById('pageOverlayIframe');
         if (!overlay || !iframe) return;
         iframe.src = url;
         overlay.classList.remove('hidden');
+        iframe.onload = function() {
+            try {
+                var doc = iframe.contentDocument;
+                if (doc && !doc.querySelector('base[target="_top"]')) {
+                    var base = doc.createElement('base');
+                    base.target = '_top';
+                    doc.head.appendChild(base);
+                }
+            } catch(e) {}
+        };
     }
     window.openPageOverlay = openPageOverlay;
 
@@ -2025,9 +2035,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const pendingUrl = localStorage.getItem('pendingShareUrl');
         if (pendingUrl) {
             localStorage.removeItem('pendingShareUrl');
-            // 새 창으로 열기 (대시보드/설명서와 동일, X 버튼 작동!)
+            // ⚠️ 수정금지(승인필요) — pendingShareUrl: SPA 오버레이로 열기 (2026-03-10)
             setTimeout(() => {
-                window.open(pendingUrl, '_blank');
+                openPageOverlay(addLangToUrl(pendingUrl));
             }, 500);
         } else {
         }
@@ -2096,11 +2106,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 authModal?.classList.add('pointer-events-none');
                 authModal?.classList.remove('pointer-events-auto');
 
-                // pendingShareUrl로 새 창에서 열기
+                // ⚠️ 수정금지(승인필요) — pendingShareUrl: SPA 오버레이로 열기 (2026-03-10)
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
                 if (pendingUrl) {
                     localStorage.removeItem('pendingShareUrl');
-                    window.open(pendingUrl, '_blank');
+                    openPageOverlay(addLangToUrl(pendingUrl));
                 } else {
                     // 🎁 2026-01-07: 프로모션 - 인증 후 자동으로 메인 페이지 진입
                     handleStartFeaturesClick();
@@ -2135,11 +2145,11 @@ document.addEventListener('DOMContentLoaded', () => {
             authModal?.classList.remove('pointer-events-auto');
             localStorage.removeItem('auth_success');
 
-            // pendingShareUrl 확인하여 새 창에서 열기
+            // ⚠️ 수정금지(승인필요) — pendingShareUrl: SPA 오버레이로 열기 (2026-03-10)
             const pendingUrl = localStorage.getItem('pendingShareUrl');
             if (pendingUrl) {
                 localStorage.removeItem('pendingShareUrl');
-                window.open(pendingUrl, '_blank');
+                openPageOverlay(addLangToUrl(pendingUrl));
             } else {
                 // ⚠️ 수정금지(승인필요): OAuth 완료 후 mainPage(카메라+입력) 직행
                 handleStartFeaturesClick();
@@ -2178,11 +2188,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }).catch(() => { });
                 }
 
-                // 대기 중인 공유 URL이 있으면 새 창에서 열기
+                // ⚠️ 수정금지(승인필요) — pendingShareUrl: SPA 오버레이로 열기 (2026-03-10)
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
                 if (pendingUrl) {
                     localStorage.removeItem('pendingShareUrl');
-                    window.open(pendingUrl, '_blank');
+                    openPageOverlay(addLangToUrl(pendingUrl));
                 }
             } else {
             }
@@ -5288,19 +5298,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 2026-01-22: DB 언어 로드 제거 → localStorage만 사용
 
-                // pendingShareUrl이 있으면 새 창에서 열기 (현재 언어로 다시 적용!)
+                // ⚠️ 수정금지(승인필요) — pendingShareUrl: SPA 오버레이로 열기 (2026-03-10)
                 const pendingUrl = localStorage.getItem('pendingShareUrl');
                 if (pendingUrl) {
                     localStorage.removeItem('pendingShareUrl');
-
-                    // 🌐 인증 후 현재 사용자 언어로 URL 다시 적용
-                    const translatedUrl = addLangToUrl(pendingUrl);
-
-                    const newWindow = window.open(translatedUrl, '_blank');
-                    if (!newWindow) {
-                        console.error('❌ 팝업 차단됨! (Fallback: 현재 탭 리다이렉트)');
-                        window.location.href = translatedUrl;
-                    }
+                    openPageOverlay(addLangToUrl(pendingUrl));
                 } else {
                     // Featured Gallery 새로고침
                     loadFeaturedGallery();

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>프로필 - 손안에 가이드</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234285F4'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/></svg>">
@@ -1009,14 +1009,15 @@
             modal.classList.remove('pointer-events-auto');
         }
 
+        // ⚠️ 수정금지(승인필요) — iframe 리다이렉트: window.top.location.href 사용 (2026-03-10)
         document.getElementById('kakaoLoginBtn').addEventListener('click', () => {
             sessionStorage.setItem('authRedirect', '/profile.html');
-            window.location.href = '/api/auth/kakao';
+            window.top.location.href = '/api/auth/kakao';
         });
 
         document.getElementById('googleLoginBtn').addEventListener('click', () => {
             sessionStorage.setItem('authRedirect', '/profile.html');
-            window.location.href = '/api/auth/google';
+            window.top.location.href = '/api/auth/google';
         });
 
         document.getElementById('closeAuthModalBtn').addEventListener('click', hideAuthModal);
@@ -1032,6 +1033,7 @@
             btn.innerHTML = '<span class="animate-pulse">처리 중...</span>';
 
             try {
+                // ⚠️ 수정금지(승인필요) — Stripe 결제 + 인증 리다이렉트: window.top.location.href 사용 (2026-03-10)
                 const response = await fetch('/api/profile/checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1043,12 +1045,12 @@
                 if (data.error) {
                     if (response.status === 401) {
                         showToast('로그인이 필요합니다.');
-                        setTimeout(() => window.location.href = '/api/auth/google', 1500);
+                        setTimeout(() => window.top.location.href = '/api/auth/google', 1500);
                     } else {
                         showToast(data.error);
                     }
                 } else if (data.url) {
-                    window.location.href = data.url;
+                    window.top.location.href = data.url;
                 }
             } catch (error) {
                 console.error('Checkout error:', error);
@@ -1060,7 +1062,8 @@
         });
 
         document.getElementById('contactProBtn')?.addEventListener('click', () => {
-            window.location.href = 'mailto:dbstour1@gmail.com?subject=[손안에 가이드] 프로플랜 문의';
+            // ⚠️ 수정금지(승인필요) — mailto 리다이렉트: window.top.location.href 사용 (2026-03-10)
+            window.top.location.href = 'mailto:dbstour1@gmail.com?subject=[손안에 가이드] 프로플랜 문의';
         });
 
         // ═══════════════════════════════════════════════════════════════
