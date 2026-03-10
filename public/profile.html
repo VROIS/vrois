@@ -1044,7 +1044,11 @@
                         showToast(data.error);
                     }
                 } else if (data.url) {
-                    window.top.location.href = data.url;
+                    // ⚠️ 수정금지(승인필요) — Stripe 결제: 새 탭으로 열기 (앱 유지) (2026-03-10)
+                    const stripeWin = window.top.open(data.url, '_blank');
+                    if (!stripeWin) {
+                        window.top.location.href = data.url;
+                    }
                 }
             } catch (error) {
                 console.error('Checkout error:', error);
