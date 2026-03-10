@@ -31,7 +31,7 @@
       },
       "edgeToEdgeEnabled": false,
       "package": "com.sonanie.guide",
-      "versionCode": 4,
+      "versionCode": 5,
       "permissions": ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION"]
     },
     "web": {

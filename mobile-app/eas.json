@@ -10,10 +10,11 @@
     },
     "preview": {
       "distribution": "internal",
+      "node": "22.12.0",
       "android": {
         "buildType": "apk",
-        "credentialsSource": "remote",
-        "withoutCredentials": true
+        "credentialsSource": "local",
+        "image": "ubuntu-22.04-jdk-17-ndk-r26b"
       },
       "ios": {
         "simulator": true
