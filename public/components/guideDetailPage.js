@@ -191,6 +191,8 @@ const guideDetailPage = {
     init: function (options = {}) {
         const self = this;
         this._state.synth = window.speechSynthesis;
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 브릿지 감지
+        this._state.isNativeApp = !!window.ReactNativeWebView;
         this._state.onClose = options.onClose || null;
 
         // DOM 요소
@@ -803,33 +805,84 @@ const guideDetailPage = {
             }
         };
 
-        // 🔧 2026-01-07: 삼성폰 Chrome에서 자동 재생 차단 우회 (사용자 제스처 필요)
+        // ⚠️ 수정금지(승인필요): 2026-03-13 3단계 TTS 전략
+        // 1단계: 앱(WebView) → 네이티브 TTS (expo-speech)
+        if (this._state.isNativeApp && window.ReactNativeWebView) {
+            this._state.isNativeSpeaking = true;
+            this._updateAudioButtonIcon(true);
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'speak',
+                payload: { text: cleanText, language: fullLang, rate: 1.0, pitch: 1.0 }
+            }));
+            if (window.__guideDetailNativeSpeakDoneListener) {
+                window.removeEventListener('nativeResponse', window.__guideDetailNativeSpeakDoneListener);
+            }
+            window.__guideDetailNativeSpeakDoneListener = function(e) {
+                if (e.detail && e.detail.type === 'speakDone') {
+                    window.removeEventListener('nativeResponse', window.__guideDetailNativeSpeakDoneListener);
+                    window.__guideDetailNativeSpeakDoneListener = null;
+                    self._state.isNativeSpeaking = false;
+                    if (thisRenderId !== self._state.renderId) return;
+                    self._updateAudioButtonIcon(false);
+                    if (self._state.originalText && self._els.description) {
+                        self._els.description.textContent = self._state.originalText;
+                    }
+                }
+            };
+            window.addEventListener('nativeResponse', window.__guideDetailNativeSpeakDoneListener);
+            return;
+        }
+
+        // 2단계: 웹 브라우저 → synth.speak() 시도 + 자동재생 감지
+        let autoplayStarted = false;
+        const origOnstart = this._state.currentUtterance.onstart;
+        this._state.currentUtterance.onstart = () => {
+            autoplayStarted = true;
+            if (origOnstart) origOnstart();
+        };
         try {
             this._state.synth.speak(this._state.currentUtterance);
         } catch (speakError) {
             console.error('[TTS] speak() 호출 오류:', speakError);
             self._updateAudioButtonIcon(false);
         }
+        setTimeout(() => {
+            if (!autoplayStarted && thisRenderId === self._state.renderId) {
+                console.log('[GuideDetailPage TTS] 자동재생 차단 감지 → ▶ 버튼 대기');
+                self._state.synth.cancel();
+                self._updateAudioButtonIcon(false);
+            }
+        }, 1200);
     },
 
-    // ⚠️ 수정금지(승인필요): 음성 정지 — iOS Safari paused 고착 방지 포함
+    // ⚠️ 수정금지(승인필요): 음성 정지 — iOS Safari paused 고착 방지 + 네이티브 TTS 분기
     _stopAudio: function () {
-        // 🔒 2025-12-11: 이벤트 핸들러 먼저 제거 (race condition 방지)
-        if (this._state.currentUtterance) {
-            this._state.currentUtterance.onboundary = null;
-            this._state.currentUtterance.onend = null;
-            this._state.currentUtterance.onstart = null;
-            this._state.currentUtterance.onerror = null;
-        }
-        if (this._state.synth.speaking) {
-            const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
-            if (!isAndroidChrome) { this._state.synth.pause(); }
-            this._state.synth.cancel();
-        }
-        // ⚠️ 2026-03-09: iOS Safari에서 cancel() 후 paused=true 고착 방지 (index.js resetSpeechState 동일 패턴)
-        if (this._state.synth.paused) {
-            this._state.synth.resume();
-            this._state.synth.cancel();
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 정지 분기
+        if (this._state.isNativeApp && window.ReactNativeWebView) {
+            this._state.isNativeSpeaking = false;
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+            if (window.__guideDetailNativeSpeakDoneListener) {
+                window.removeEventListener('nativeResponse', window.__guideDetailNativeSpeakDoneListener);
+                window.__guideDetailNativeSpeakDoneListener = null;
+            }
+        } else {
+            // 🔒 2025-12-11: 이벤트 핸들러 먼저 제거 (race condition 방지)
+            if (this._state.currentUtterance) {
+                this._state.currentUtterance.onboundary = null;
+                this._state.currentUtterance.onend = null;
+                this._state.currentUtterance.onstart = null;
+                this._state.currentUtterance.onerror = null;
+            }
+            if (this._state.synth.speaking) {
+                const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
+                if (!isAndroidChrome) { this._state.synth.pause(); }
+                this._state.synth.cancel();
+            }
+            // ⚠️ 2026-03-09: iOS Safari에서 cancel() 후 paused=true 고착 방지
+            if (this._state.synth.paused) {
+                this._state.synth.resume();
+                this._state.synth.cancel();
+            }
         }
         this._updateAudioButtonIcon(false);
         if (this._state.originalText && this._els.description) {
@@ -842,10 +895,10 @@ const guideDetailPage = {
         const text = this._els.description.textContent;
         if (!text || text === '불러오는 중...') return;
 
-        if (this._state.synth.speaking) {
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 상태 체크 포함
+        if (this._state.synth.speaking || this._state.isNativeSpeaking) {
             this._stopAudio();
         } else {
-            // 🎤 저장된 음성 정보 사용
             this._playAudio(text, this._state.savedVoiceLang, this._state.savedVoiceName);
         }
     },

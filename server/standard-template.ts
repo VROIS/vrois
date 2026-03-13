@@ -586,6 +586,8 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
         
         // Web Speech API
         const synth = window.speechSynthesis;
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 브릿지 감지
+        const isNativeApp = !!window.ReactNativeWebView;
         // ⚠️ 수정금지(승인필요) — voices→_tplVoices: share-page.js 전역 스코프 충돌 방지 (2026-03-10)
         let _tplVoices = [];
         let currentUtterance = null;
@@ -705,9 +707,18 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
         }
         
         function stopAudio() {
-            if (synth.speaking) {
-                synth.pause();
-                synth.cancel();
+            // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 정지 분기
+            if (isNativeApp && window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+                if (window.__galleryNativeSpeakDoneListener) {
+                    window.removeEventListener('nativeResponse', window.__galleryNativeSpeakDoneListener);
+                    window.__galleryNativeSpeakDoneListener = null;
+                }
+            } else {
+                if (synth.speaking) {
+                    synth.pause();
+                    synth.cancel();
+                }
             }
             const playIcon = document.getElementById('play-icon');
             const pauseIcon = document.getElementById('pause-icon');
@@ -801,7 +812,49 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
                 textElement.textContent = originalText;
             };
             
+            // ⚠️ 수정금지(승인필요): 2026-03-13 3단계 TTS 전략
+            // 1단계: 앱(WebView) → 네이티브 TTS (expo-speech)
+            if (isNativeApp && window.ReactNativeWebView) {
+                _galleryNativeSpeaking = true;
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'speak',
+                    payload: { text: cleanText, language: langCode, rate: 1.0, pitch: 1.0 }
+                }));
+                if (window.__galleryNativeSpeakDoneListener) {
+                    window.removeEventListener('nativeResponse', window.__galleryNativeSpeakDoneListener);
+                }
+                window.__galleryNativeSpeakDoneListener = function(e) {
+                    if (e.detail && e.detail.type === 'speakDone') {
+                        window.removeEventListener('nativeResponse', window.__galleryNativeSpeakDoneListener);
+                        window.__galleryNativeSpeakDoneListener = null;
+                        _galleryNativeSpeaking = false;
+                        playIcon.style.display = 'block';
+                        pauseIcon.style.display = 'none';
+                        textElement.textContent = originalText;
+                    }
+                };
+                window.addEventListener('nativeResponse', window.__galleryNativeSpeakDoneListener);
+                return;
+            }
+
+            // 2단계: 웹 브라우저 → synth.speak() 시도 + 자동재생 감지
+            let autoplayStarted = false;
+            const origOnstart = currentUtterance.onstart;
+            currentUtterance.onstart = () => {
+                autoplayStarted = true;
+                if (origOnstart) origOnstart();
+            };
             synth.speak(currentUtterance);
+            setTimeout(() => {
+                if (!autoplayStarted) {
+                    console.log('[ShareTemplate Gallery TTS] 자동재생 차단 감지 → ▶ 버튼 대기');
+                    synth.cancel();
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                }
+            }, 1200);
         }
         
         populateVoiceList();
@@ -943,12 +996,15 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
         });
         
         // 음성 재생/정지
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 상태 추적용
+        let _galleryNativeSpeaking = false;
         document.getElementById('detail-audio').addEventListener('click', () => {
-            if (synth.speaking) {
+            if (synth.speaking || _galleryNativeSpeaking) {
+                _galleryNativeSpeaking = false;
                 stopAudio();
             } else {
                 const text = document.getElementById('detail-description').textContent;
-                // 🎤 저장된 언어 사용
+                _galleryNativeSpeaking = isNativeApp;
                 playAudio(text, currentVoiceLang);
             }
         });
@@ -1361,6 +1417,8 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
     <script>
         // Web Speech API
         const synth = window.speechSynthesis;
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 브릿지 감지
+        const isNativeApp = !!window.ReactNativeWebView;
         // ⚠️ 수정금지(승인필요) — voices→_tplVoices: share-page.js 전역 스코프 충돌 방지 (2026-03-10)
         let _tplVoices = [];
         let currentUtterance = null;
@@ -1480,9 +1538,18 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
         }
         
         function stopAudio() {
-            if (synth.speaking) {
-                synth.pause();
-                synth.cancel();
+            // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 정지 분기
+            if (isNativeApp && window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+                if (window.__singleGuideNativeSpeakDoneListener) {
+                    window.removeEventListener('nativeResponse', window.__singleGuideNativeSpeakDoneListener);
+                    window.__singleGuideNativeSpeakDoneListener = null;
+                }
+            } else {
+                if (synth.speaking) {
+                    synth.pause();
+                    synth.cancel();
+                }
             }
             document.getElementById('play-icon').style.display = 'block';
             document.getElementById('pause-icon').style.display = 'none';
@@ -1568,7 +1635,49 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
                 textElement.textContent = originalText;
             };
             
+            // ⚠️ 수정금지(승인필요): 2026-03-13 3단계 TTS 전략
+            // 1단계: 앱(WebView) → 네이티브 TTS (expo-speech)
+            if (isNativeApp && window.ReactNativeWebView) {
+                _singleGuideNativeSpeaking = true;
+                document.getElementById('play-icon').style.display = 'none';
+                document.getElementById('pause-icon').style.display = 'block';
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'speak',
+                    payload: { text: cleanText, language: langCode, rate: 1.0, pitch: 1.0 }
+                }));
+                if (window.__singleGuideNativeSpeakDoneListener) {
+                    window.removeEventListener('nativeResponse', window.__singleGuideNativeSpeakDoneListener);
+                }
+                window.__singleGuideNativeSpeakDoneListener = function(e) {
+                    if (e.detail && e.detail.type === 'speakDone') {
+                        window.removeEventListener('nativeResponse', window.__singleGuideNativeSpeakDoneListener);
+                        window.__singleGuideNativeSpeakDoneListener = null;
+                        _singleGuideNativeSpeaking = false;
+                        document.getElementById('play-icon').style.display = 'block';
+                        document.getElementById('pause-icon').style.display = 'none';
+                        textElement.textContent = originalText;
+                    }
+                };
+                window.addEventListener('nativeResponse', window.__singleGuideNativeSpeakDoneListener);
+                return;
+            }
+
+            // 2단계: 웹 브라우저 → synth.speak() 시도 + 자동재생 감지
+            let autoplayStarted = false;
+            const origOnstart = currentUtterance.onstart;
+            currentUtterance.onstart = () => {
+                autoplayStarted = true;
+                if (origOnstart) origOnstart();
+            };
             synth.speak(currentUtterance);
+            setTimeout(() => {
+                if (!autoplayStarted) {
+                    console.log('[SingleGuide TTS] 자동재생 차단 감지 → ▶ 버튼 대기');
+                    synth.cancel();
+                    document.getElementById('play-icon').style.display = 'block';
+                    document.getElementById('pause-icon').style.display = 'none';
+                }
+            }, 1200);
         }
         
         populateVoiceList();
@@ -1577,10 +1686,14 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
         }
         
         // 오디오 버튼 클릭
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 상태 추적용
+        let _singleGuideNativeSpeaking = false;
         document.getElementById('detail-audio').addEventListener('click', () => {
-            if (synth.speaking) {
+            if (synth.speaking || _singleGuideNativeSpeaking) {
+                _singleGuideNativeSpeaking = false;
                 stopAudio();
             } else {
+                _singleGuideNativeSpeaking = isNativeApp;
                 playAudio();
             }
         });
