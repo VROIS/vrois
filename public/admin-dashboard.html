@@ -1881,12 +1881,27 @@
                 }
             },
 
+            // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 pause/resume 포함 음성 토글
             _toggleAudio: function () {
                 const text = this._els.description.textContent;
                 if (!text || text === '불러오는 중...') return;
 
-                // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 상태 체크 포함
-                if (this._state.synth.speaking || this._state.isNativeSpeaking) {
+                if (this._state.isNativeSpeaking) {
+                    this._state.isNativeSpeaking = false;
+                    this._state._nativePausedText = this._state.originalText || text;
+                    this._state._nativePaused = true;
+                    if (window.ReactNativeWebView) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+                    }
+                    if (window.__adminNativeSpeakDoneListener) {
+                        window.removeEventListener('nativeResponse', window.__adminNativeSpeakDoneListener);
+                        window.__adminNativeSpeakDoneListener = null;
+                    }
+                    this._updateAudioButtonIcon(false);
+                } else if (this._state._nativePaused) {
+                    this._state._nativePaused = false;
+                    this._playAudio(this._state._nativePausedText, this._state.savedVoiceLang, this._state.savedVoiceName);
+                } else if (this._state.synth.speaking) {
                     this._stopAudio();
                 } else {
                     this._playAudio(text, this._state.savedVoiceLang, this._state.savedVoiceName);

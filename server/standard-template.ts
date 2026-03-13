@@ -995,16 +995,25 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
             document.getElementById('detail-text').classList.toggle('hidden');
         });
         
-        // 음성 재생/정지
-        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 상태 추적용
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 pause/resume 포함 음성 토글
         let _galleryNativeSpeaking = false;
+        let _galleryNativePaused = false;
+        let _galleryNativePausedText = null;
         document.getElementById('detail-audio').addEventListener('click', () => {
-            if (synth.speaking || _galleryNativeSpeaking) {
+            if (_galleryNativeSpeaking) {
+                // 네이티브 재생 중 → 일시정지
                 _galleryNativeSpeaking = false;
+                _galleryNativePausedText = document.getElementById('detail-description').textContent;
+                _galleryNativePaused = true;
+                stopAudio();
+            } else if (_galleryNativePaused) {
+                // 네이티브 일시정지 → 재개 (처음부터 재시작)
+                _galleryNativePaused = false;
+                playAudio(_galleryNativePausedText, currentVoiceLang);
+            } else if (synth.speaking) {
                 stopAudio();
             } else {
                 const text = document.getElementById('detail-description').textContent;
-                _galleryNativeSpeaking = isNativeApp;
                 playAudio(text, currentVoiceLang);
             }
         });
@@ -1685,15 +1694,22 @@ export function generateSingleGuideHTML(data: SingleGuidePageData): string {
             synth.onvoiceschanged = populateVoiceList;
         }
         
-        // 오디오 버튼 클릭
-        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 TTS 상태 추적용
+        // ⚠️ 수정금지(승인필요): 2026-03-13 네이티브 pause/resume 포함 음성 토글
         let _singleGuideNativeSpeaking = false;
+        let _singleGuideNativePaused = false;
         document.getElementById('detail-audio').addEventListener('click', () => {
-            if (synth.speaking || _singleGuideNativeSpeaking) {
+            if (_singleGuideNativeSpeaking) {
+                // 네이티브 재생 중 → 일시정지
                 _singleGuideNativeSpeaking = false;
+                _singleGuideNativePaused = true;
+                stopAudio();
+            } else if (_singleGuideNativePaused) {
+                // 네이티브 일시정지 → 재개 (처음부터 재시작)
+                _singleGuideNativePaused = false;
+                playAudio();
+            } else if (synth.speaking) {
                 stopAudio();
             } else {
-                _singleGuideNativeSpeaking = isNativeApp;
                 playAudio();
             }
         });
