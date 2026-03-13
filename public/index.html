@@ -1969,6 +1969,11 @@
     /* 최상위 레벨 iframe 숨김 (Safari) */
     body > iframe[style*="z-index"] { display: none !important; }
     iframe[frameborder="0"][style*="position"] { display: none !important; }
+    /* ⚠️ 수정금지(승인필요): 2026-03-12 Google Translate 동적 오버레이 완전 차단 */
+    /* 번역 진행 중 생성되는 스피너/팝업 강제 숨김 (클래스 기반 — 성능 최적화) */
+    .goog-te-spinner-animation { display: none !important; }
+    div[class*="VIpgJd"] { z-index: -1 !important; pointer-events: none; }
+    body > div.skiptranslate { z-index: -1 !important; display: none !important; }
 </style>
 
 <!-- 커튼 효과 제거됨 (2025-12-07) -->

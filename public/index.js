@@ -390,6 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let retranslationPending = false;
 
     async function retranslateNewContent() {
+        // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 앱은 Google Translate 미사용 → 900ms 대기 스킵
+        if (isNativeApp) return;
         // 🌐 2025-12-24: userLang 체크 제거 - Google Translate 드롭다운 활성화 여부만 확인
         // 콘텐츠가 외국어이고 앱 언어가 한국어여도 번역이 필요함
         return new Promise((resolve) => {
@@ -1301,6 +1303,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function stopAudio() {
+            // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS 중지
+            if (isNativeApp && window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+            }
             if (synth.speaking) {
                 synth.pause();
                 synth.cancel();
@@ -1702,6 +1708,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetSpeechState() {
+        // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS 중지 + 리스너 정리
+        if (isNativeApp && window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+        }
+        // 네이티브 TTS 리스너/상태 정리 (메모리 누수 방지)
+        if (window.__nativeSpeakDoneListener) {
+            window.removeEventListener('nativeResponse', window.__nativeSpeakDoneListener);
+            window.__nativeSpeakDoneListener = null;
+        }
+        window.__nativePausedUtterance = null;
         // 🧹 메모리 최적화: 이전 음성 완전 정리 (2025-10-05)
         synth.cancel();
         // ⚠️ 2026-03-06: iOS Safari에서 cancel() 후 paused=true 고착 방지
@@ -4030,6 +4046,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS 분기 (삼성 Web Speech API 미작동 해결)
+        if (isNativeApp && window.ReactNativeWebView) {
+            updateAudioButton('pause');
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'speak',
+                payload: { text: translatedText, language: langCode, rate: 0.9, pitch: 1.0 }
+            }));
+            // 이전 리스너 정리 (누수 방지)
+            if (window.__nativeSpeakDoneListener) {
+                window.removeEventListener('nativeResponse', window.__nativeSpeakDoneListener);
+            }
+            // 네이티브 TTS 완료 시 다음 문장 재생 (App.js onDone → speakDone 이벤트)
+            window.__nativeSpeakDoneListener = function(e) {
+                if (e.detail && e.detail.type === 'speakDone') {
+                    window.removeEventListener('nativeResponse', window.__nativeSpeakDoneListener);
+                    window.__nativeSpeakDoneListener = null;
+                    element.classList.remove('speaking');
+                    // 에러 카운팅 (무한 루프 방지)
+                    if (e.detail.error) {
+                        window.__ttsErrorCount = (window.__ttsErrorCount || 0) + 1;
+                        if (window.__ttsErrorCount >= 3) {
+                            isSpeaking = false;
+                            utteranceQueue = [];
+                            updateAudioButton('play');
+                            window.__ttsErrorCount = 0;
+                            return;
+                        }
+                    } else {
+                        window.__ttsErrorCount = 0;
+                    }
+                    if (!isPaused) {
+                        speakNext();
+                    }
+                }
+            };
+            window.addEventListener('nativeResponse', window.__nativeSpeakDoneListener);
+            return;
+        }
         updateAudioButton('pause');
         synth.speak(utterance);
     }
@@ -4048,11 +4102,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isSpeaking) {
             if (isPaused) {
-                synth.resume();
-                isPaused = false;
-                updateAudioButton('pause');
+                // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS는 pause/resume 미지원 → 큐에서 재시작
+                // 일시정지 시 저장한 문장을 큐 앞에 복원 (문장 스킵 방지)
+                if (isNativeApp) {
+                    if (window.__nativePausedUtterance) {
+                        // DOM에서 분리된 스테일 참조 방지 — 유효한 경우만 복원
+                        if (document.contains(window.__nativePausedUtterance.element)) {
+                            utteranceQueue.unshift(window.__nativePausedUtterance);
+                        }
+                        window.__nativePausedUtterance = null;
+                    }
+                    isPaused = false;
+                    updateAudioButton('pause');
+                    speakNext();
+                } else {
+                    synth.resume();
+                    isPaused = false;
+                    updateAudioButton('pause');
+                }
             } else {
-                synth.pause();
+                // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS 일시정지 → 중지로 처리
+                // 현재 재생 중인 문장을 저장해서 재개 시 다시 큐에 넣음 (문장 스킵 방지)
+                if (isNativeApp && window.ReactNativeWebView) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeech', payload: {} }));
+                    if (currentlySpeakingElement) {
+                        window.__nativePausedUtterance = {
+                            text: currentlySpeakingElement.textContent,
+                            element: currentlySpeakingElement
+                        };
+                    }
+                } else {
+                    synth.pause();
+                }
                 isPaused = true;
                 updateAudioButton('play');
             }
@@ -5094,7 +5175,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners (디바운스 적용) ---
     startCameraFromFeaturesBtn?.addEventListener('click', handleStartFeaturesClick);
-    shootBtn?.addEventListener('click', () => debounceClick('shoot', capturePhoto, 800));
+    // ⚠️ 수정금지(승인필요): 2026-03-12 debounce 800→300ms (앱 터치 반응 개선)
+    shootBtn?.addEventListener('click', () => debounceClick('shoot', capturePhoto, 300));
     uploadBtn?.addEventListener('click', () => uploadInput.click());
     micBtn?.addEventListener('click', () => {
         // 🔊 음성 재생 즉시 중지 (debounce 전에 실행)
@@ -5102,7 +5184,8 @@ document.addEventListener('DOMContentLoaded', () => {
             synth.cancel();
             resetSpeechState();
         }
-        debounceClick('mic', handleMicButtonClick, 500);
+        // ⚠️ 수정금지(승인필요): 2026-03-12 debounce 500→200ms (앱 터치 반응 개선)
+        debounceClick('mic', handleMicButtonClick, 200);
     });
 
     // 🎤 상세페이지 마이크 버튼 (다시 질문) - 메인페이지와 동일 로직
@@ -5112,7 +5195,8 @@ document.addEventListener('DOMContentLoaded', () => {
             synth.cancel();
             resetSpeechState();
         }
-        debounceClick('detailMic', handleDetailMicClick, 500);
+        // ⚠️ 수정금지(승인필요): 2026-03-12 debounce 500→200ms (앱 터치 반응 개선)
+        debounceClick('detailMic', handleDetailMicClick, 200);
     });
 
     archiveBtn?.addEventListener('click', () => debounceClick('archive', showArchivePage, 300));

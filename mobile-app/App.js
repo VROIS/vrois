@@ -1,8 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, Platform, BackHandler, PermissionsAndroid } from 'react-native';
+import { StyleSheet, SafeAreaView, Platform, BackHandler, PermissionsAndroid, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useRef, useEffect, useCallback } from 'react';
 import Constants from 'expo-constants';
+// ⚠️ 수정금지(승인필요): 2026-03-12 Google OAuth 외부 브라우저 + Stripe 결제용
+import * as WebBrowser from 'expo-web-browser';
+// ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 음성인식 (마이크 입력)
+// Replit Claude가 expo-speech-recognition 설치 후 활성화
+// import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 
 // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지용 모듈 import
 import * as Speech from 'expo-speech';
@@ -17,20 +22,33 @@ import * as Localization from 'expo-localization';
 // ⚠️ 수정금지(승인필요): 2026-03-11 fallback URL에 "1" 누락 수정 — 실제 도메인은 my-handyguide1.replit.app
 const WEB_APP_URL = Constants.expoConfig?.extra?.webAppUrl || 'https://my-handyguide1.replit.app';
 
+// ⚠️ 수정금지(승인필요): 2026-03-12 iOS 최적 음성 매핑 (한국어=Yuna 강제, Roko 방지)
+const IOS_VOICE_MAP = {
+  'ko-KR': 'com.apple.ttsbundle.Yuna-compact',
+  'en-US': 'com.apple.ttsbundle.Samantha-compact',
+  'ja-JP': 'com.apple.ttsbundle.Kyoko-compact',
+  'zh-CN': 'com.apple.ttsbundle.Ting-Ting-compact',
+  'fr-FR': 'com.apple.ttsbundle.Thomas-compact',
+  'de-DE': 'com.apple.ttsbundle.Anna-compact',
+  'es-ES': 'com.apple.ttsbundle.Monica-compact',
+};
+
 // iOS: 기본 Safari UA 사용 (Apple 심사에서 UA 위조 시 거절 가능)
 // Android: Chrome UA 강제 (WebView 호환성)
 const ANDROID_USER_AGENT =
   'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36';
 
+// ⚠️ 수정금지(승인필요): 2026-03-12 SafeAreaView가 safe-area 처리하므로 CSS 이중 패딩 제거
+// Z Fold 등 큰 safe-area-inset-bottom 기기에서 하단 버튼 밀림 방지
+// touch-action: manipulation → 300ms 터치 딜레이 제거
 const INJECTED_JS = `
 (function() {
   var style = document.createElement('style');
-  style.textContent = 
-    'body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }' +
-    '.footer-safe-area { padding-bottom: env(safe-area-inset-bottom) !important; }' +
-    '.gallery-footer { padding-bottom: env(safe-area-inset-bottom) !important; }' +
-    '.bottom-nav { padding-bottom: env(safe-area-inset-bottom) !important; }' +
-    '.fixed-bottom, [style*="position: fixed"][style*="bottom"] { padding-bottom: env(safe-area-inset-bottom) !important; }';
+  style.textContent =
+    'button, a, input, select, textarea, [role="button"], [onclick] { touch-action: manipulation; }' +
+    '.footer-safe-area { padding-bottom: 0 !important; }' +
+    '.gallery-footer { padding-bottom: 0 !important; }' +
+    '.bottom-nav { padding-bottom: 0 !important; }';
   document.head.appendChild(style);
 })();
 true;
@@ -55,6 +73,25 @@ export default function App() {
   useEffect(() => {
     requestAndroidPermissions();
 
+    // ⚠️ 수정금지(승인필요): 2026-03-12 딥링크 수신 — Google OAuth 외부 브라우저 콜백
+    // 외부 브라우저에서 sonanie-guide://auth-callback?success=true 수신 시 WebView 새로고침
+    const handleDeepLink = (event) => {
+      const { url } = event;
+      if (url && url.includes('auth-callback') && url.includes('success=true')) {
+        // OAuth 성공 → 외부 브라우저 닫기 + WebView에 인증 플래그 설정 후 새로고침
+        WebBrowser.dismissBrowser().catch(() => {});
+        if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(`
+            localStorage.setItem('auth_success', 'true');
+            localStorage.setItem('landingVisited', 'true');
+            window.location.replace('/');
+            true;
+          `);
+        }
+      }
+    };
+    const linkingSub = Linking.addEventListener('url', handleDeepLink);
+
     if (Platform.OS === 'android') {
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
         if (webViewRef.current) {
@@ -63,8 +100,12 @@ export default function App() {
         }
         return false;
       });
-      return () => backHandler.remove();
+      return () => {
+        backHandler.remove();
+        linkingSub.remove();
+      };
     }
+    return () => linkingSub.remove();
   }, []);
 
   // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 → 웹 응답 전송 함수
@@ -89,9 +130,15 @@ export default function App() {
       switch (type) {
         // --- TTS (텍스트 음성 변환) ---
         case 'speak': {
-          // ⚠️ 수정금지(승인필요): expo-speech 네이티브 TTS
+          // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS + 언어별 최적 음성 하드코딩 강제
           const { text, language = 'en-US', rate = 1.0, pitch = 1.0 } = payload;
-          Speech.speak(text, { language, rate, pitch });
+          const speakOpts = { language, rate, pitch };
+          if (Platform.OS === 'ios' && IOS_VOICE_MAP[language]) {
+            speakOpts.voice = IOS_VOICE_MAP[language];
+          }
+          speakOpts.onDone = () => sendToWeb('speakDone', { success: true });
+          speakOpts.onError = (err) => sendToWeb('speakDone', { error: err?.message || 'unknown' });
+          Speech.speak(text, speakOpts);
           break;
         }
         case 'stopSpeech': {
@@ -245,6 +292,26 @@ export default function App() {
           break;
         }
 
+        // --- 네이티브 음성인식 (마이크 입력) ---
+        case 'startSpeechRecognition': {
+          // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 음성인식 시작
+          // expo-speech-recognition 설치 후 아래 주석 해제
+          // const lang = payload?.language || 'ko-KR';
+          // try {
+          //   await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+          //   ExpoSpeechRecognitionModule.start({ lang, interimResults: false });
+          // } catch (e) {
+          //   sendToWeb('speechResult', { error: e.message });
+          // }
+          sendToWeb('speechResult', { error: 'speech_not_ready', message: '음성인식 모듈 설치 대기 중' });
+          break;
+        }
+        case 'stopSpeechRecognition': {
+          // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 음성인식 중지
+          // ExpoSpeechRecognitionModule.stop();
+          break;
+        }
+
         // --- 오버레이 닫기 (추천갤러리 리턴 문제 해결) ---
         case 'closeWindow': {
           // ⚠️ 수정금지(승인필요): window.close() 대신 네이티브에서 뒤로가기 처리
@@ -267,6 +334,26 @@ export default function App() {
     request.grant(request.resources);
   }, []);
 
+  // ⚠️ 수정금지(승인필요): 2026-03-12 Google OAuth + Stripe → 시스템 브라우저로 열기
+  // Google: WebView 내 OAuth 차단 (403 disallowed_useragent) → 외부 브라우저 필수 (RFC 8252)
+  // Stripe: WebView 결제 비권장 → 시스템 브라우저로 전환
+  const openExternal = useCallback((url) => {
+    WebBrowser.openBrowserAsync(url).catch(() => Linking.openURL(url));
+  }, []);
+
+  const handleNavigationRequest = useCallback((request) => {
+    const { url } = request;
+
+    // Google OAuth 또는 Stripe Checkout → 시스템 브라우저에서 열기
+    if ((url.includes('/api/auth/google') && !url.includes('/callback')) ||
+        url.includes('checkout.stripe.com')) {
+      openExternal(url);
+      return false; // WebView 내 이동 차단
+    }
+
+    return true; // 나머지 URL은 WebView 내에서 정상 이동
+  }, [openExternal]);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" backgroundColor="#4285F4" />
@@ -288,6 +375,7 @@ export default function App() {
         thirdPartyCookiesEnabled={true}
         mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         injectedJavaScript={INJECTED_JS}
+        onShouldStartLoadWithRequest={handleNavigationRequest}
         onMessage={handleMessage}
         androidLayerType="hardware"
         onAndroidPermissionRequest={handlePermissionRequest}
