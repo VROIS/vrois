@@ -20,8 +20,15 @@
         "NSCameraUsageDescription": "AI 여행 가이드를 위해 카메라로 장소나 음식을 촬영합니다.",
         "NSMicrophoneUsageDescription": "음성으로 여행 질문을 할 수 있습니다.",
         "NSLocationWhenInUseUsageDescription": "현재 위치 주변의 관광 정보를 제공합니다.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "백그라운드에서도 위치 기반 안내를 제공합니다.",
         "NSPhotoLibraryUsageDescription": "갤러리에서 사진을 선택하여 AI 분석을 합니다.",
+<<<<<<< HEAD
         "NSContactsUsageDescription": "친구에게 앱을 추천하기 위해 연락처에 접근합니다.",
+=======
+        "NSContactsUsageDescription": "친구에게 앱을 추천할 수 있습니다.",
+        "NSFaceIDUsageDescription": "생체 인증으로 빠르게 로그인합니다.",
+        "NSMotionUsageDescription": "정확한 위치 정보를 위해 동작 센서를 활용합니다.",
+>>>>>>> 12b775deca3fc06929d64797b3fad120b949b448
         "ITSAppUsesNonExemptEncryption": false
       },
       "privacyManifests": {
@@ -52,8 +59,12 @@
       },
       "edgeToEdgeEnabled": false,
       "package": "com.sonanie.guide",
+<<<<<<< HEAD
       "versionCode": 8,
       "blockedPermissions": ["ACTIVITY_RECOGNITION"],
+=======
+      "versionCode": 5,
+>>>>>>> 12b775deca3fc06929d64797b3fad120b949b448
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
@@ -75,6 +86,15 @@
       "eas": {
         "projectId": "bbbbbc11-bcce-4dc2-93c6-d4b570adce59"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-localization",
+      "expo-audio",
+      "expo-video",
+      "expo-web-browser",
+      "expo-mail-composer",
+      "expo-asset"
+    ]
   }
 }

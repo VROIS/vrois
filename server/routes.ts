@@ -1315,86 +1315,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     dotfiles: 'deny'
   }));
 
-  // 💳 크레딧 시스템 API
-  app.get('/api/credits', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req.user);
-      const user = await storage.getUser(userId);
-      
-      // 🎯 관리자 무제한 크레딧 체크
-      if (user?.isAdmin) {
-        return res.json({ credits: 999999, isAdmin: true });
-      }
-      
-      const credits = await storage.getUserCredits(userId);
-      res.json({ credits, isAdmin: false });
-    } catch (error) {
-      console.error("Error fetching credits:", error);
-      res.status(500).json({ message: "Failed to fetch credits" });
-    }
-  });
-
-  app.get('/api/credits/history', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req.user);
-      const history = await storage.getCreditHistory(userId);
-      res.json(history);
-    } catch (error) {
-      console.error("Error fetching credit history:", error);
-      res.status(500).json({ message: "Failed to fetch credit history" });
-    }
-  });
-
-  app.post('/api/credits/deduct', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req.user);
-      const { amount, description } = req.body;
-      
-      // 🎯 관리자 무제한 크레딧 체크
-      const user = await storage.getUser(userId);
-      if (user?.isAdmin) {
-        return res.json({ success: true, credits: 999999, isAdmin: true });
-      }
-      
-      const success = await storage.deductCredits(userId, amount, description);
-      if (success) {
-        const updatedCredits = await storage.getUserCredits(userId);
-        res.json({ success: true, credits: updatedCredits });
-      } else {
-        res.status(400).json({ success: false, message: '크레딧이 부족합니다.' });
-      }
-    } catch (error) {
-      console.error("Error deducting credits:", error);
-      res.status(500).json({ message: "크레딧 차감 중 오류가 발생했습니다." });
-    }
-  });
-
-  app.post('/api/credits/purchase', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req.user);
-      const { amount, paymentIntentId } = req.body;
-      
-      // TODO: Stripe 결제 검증 후 크레딧 추가
-      // const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      // if (paymentIntent.status === 'succeeded') {
-      
-      const user = await storage.addCredits(
-        userId,
-        amount,
-        'purchase',
-        `크레딧 구매: ${amount}개`,
-        paymentIntentId
-      );
-
-      // 💰 추천인 킥백 처리
-      await storage.processCashbackReward(amount * 100, userId); // 센트 단위로 변환
-      
-      res.json({ success: true, credits: user.credits });
-    } catch (error) {
-      console.error("Error processing credit purchase:", error);
-      res.status(500).json({ message: "Failed to process credit purchase" });
-    }
-  });
+  // ⚠️ 수정금지(승인필요): 2026-03-11 전수검사에서 dead code + 보안취약점으로 삭제
+  // 삭제된 엔드포인트: /api/credits (GET), /api/credits/history (GET),
+  // /api/credits/deduct (POST), /api/credits/purchase (POST)
+  // 프론트엔드는 /api/profile/* 경로만 사용 중 (profileRoutes.ts)
+  // /api/credits/purchase는 Stripe 검증 없이 크레딧 추가하는 보안 위험이 있었음
 
   app.post('/api/referral/signup-bonus', isAuthenticated, async (req: any, res) => {
     try {

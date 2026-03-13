@@ -16,6 +16,7 @@ import { creditService, CREDIT_CONFIG } from './creditService';
 import { getEURtoKRW, convertEURtoKRW, formatKRW, getAllRates } from './exchangeRate';
 import { getUncachableStripeClient, getStripePublishableKey } from './stripeClient';
 import { storage } from './storage';
+import { db } from './db'; // ⚠️ 수정금지(승인필요): 2026-03-11 Race Condition 수정용 트랜잭션 import
 
 const router = Router();
 
@@ -325,40 +326,49 @@ router.post('/profile/verify-payment', async (req: Request, res: Response) => {
       });
     }
 
-    // 이미 처리된 결제인지 확인 (중복 방지)
-    const existingTransaction = await storage.getCreditTransactionByReference(sessionId);
-    if (existingTransaction) {
-      console.log('⚠️ Payment already processed:', sessionId);
-      const balance = await creditService.getBalance(userId);
-      return res.json({ 
-        success: true, 
-        credits: balance,
-        message: '이미 처리된 결제입니다.' 
+    // ⚠️ 수정금지(승인필요): 2026-03-11 Race Condition 수정 — 중복체크+크레딧추가를 DB 트랜잭션으로 감싸서 이중지급 방지
+    const result = await db.transaction(async (tx) => {
+      // 트랜잭션 내에서 중복 체크 (동시 요청 시 하나만 통과)
+      const existingTransaction = await storage.getCreditTransactionByReference(sessionId);
+      if (existingTransaction) {
+        console.log('⚠️ Payment already processed:', sessionId);
+        const balance = await creditService.getBalance(userId);
+        return { alreadyProcessed: true, credits: balance };
+      }
+
+      // metadata에서 크레딧 정보 확인
+      const credits = parseInt(session.metadata?.credits || CREDIT_CONFIG.PURCHASE_CREDITS.toString());
+
+      // 크레딧 추가
+      const user = await storage.addCredits(
+        userId,
+        credits,
+        'purchase',
+        `크레딧 구매: ${credits}개 (€${CREDIT_CONFIG.PRICE_EUR})`,
+        sessionId
+      );
+
+      console.log('✅ Credits added:', { userId, credits, newBalance: user.credits });
+      return { alreadyProcessed: false, credits: user.credits, added: credits };
+    });
+
+    // 이미 처리된 결제
+    if (result.alreadyProcessed) {
+      return res.json({
+        success: true,
+        credits: result.credits,
+        message: '이미 처리된 결제입니다.'
       });
     }
 
-    // metadata에서 크레딧 정보 확인
-    const credits = parseInt(session.metadata?.credits || CREDIT_CONFIG.PURCHASE_CREDITS.toString());
-    
-    // 크레딧 추가
-    const user = await storage.addCredits(
-      userId,
-      credits,
-      'purchase',
-      `크레딧 구매: ${credits}개 (€${CREDIT_CONFIG.PRICE_EUR})`,
-      sessionId
-    );
-
-    console.log('✅ Credits added:', { userId, credits, newBalance: user.credits });
-
-    // 추천인 킥백 처리
+    // 추천인 킥백 처리 (트랜잭션 외부 — 킥백 실패가 결제를 롤백하면 안 됨)
     await storage.processCashbackReward(CREDIT_CONFIG.PRICE_EUR * 100, userId);
 
-    res.json({ 
-      success: true, 
-      credits: user.credits,
-      added: credits,
-      message: `${credits} 크레딧이 충전되었습니다!` 
+    res.json({
+      success: true,
+      credits: result.credits,
+      added: result.added,
+      message: `${result.added} 크레딧이 충전되었습니다!`
     });
   } catch (error: any) {
     console.error('Payment verification error:', error);

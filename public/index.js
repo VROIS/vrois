@@ -40,12 +40,36 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ sessionId })
     }).catch(() => { }); // 에러 무시
 
+    // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱 시작 시 SecureStore에서 인증 정보 복원 + 네이티브 응답 리스너
+    if (window.ReactNativeWebView) {
+        // 네이티브 저장소에서 인증 캐시 복원 요청
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'secureStore', payload: { action: 'get', key: 'cachedUser' } }));
+        // 네이티브 응답 수신 리스너
+        window.addEventListener('nativeResponse', (e) => {
+            const data = e.detail;
+            if (data.type === 'secureStoreResult' && data.key === 'cachedUser' && data.value) {
+                // localStorage에 없으면 네이티브 저장소에서 복원
+                if (!localStorage.getItem('cachedUser')) {
+                    localStorage.setItem('cachedUser', data.value);
+                    console.log('[Bridge] 네이티브 저장소에서 인증 캐시 복원 완료');
+                }
+            }
+            if (data.type === 'location' && !data.error) {
+                // 네이티브 위치 응답 처리 — 위치 기반 기능에 전달
+                console.log('[Bridge] 네이티브 위치:', data.latitude, data.longitude);
+            }
+        });
+    }
+
     // 🌐 언어 선택 바인딩 (admin-settings.html과 동일)
     LanguageHelper.bindLanguageSelect('languageSelect');
 
     // 📳 햅틱 피드백 함수 (감각 보상 이론 적용)
     function triggerHaptic(pattern = 50) {
-        if (navigator.vibrate) {
+        // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 expo-haptics 사용, 웹은 기존 vibrate 유지
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'haptic', payload: { style: 'light' } }));
+        } else if (navigator.vibrate) {
             navigator.vibrate(pattern);
         }
     }
@@ -183,6 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Web Speech API
     // 🎤 2026-01-24: 12월 버전으로 롤백 (설정 없이 브라우저 기본값 사용)
+    // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 네이티브 음성인식 사용
+    const isNativeApp = !!window.ReactNativeWebView;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = SpeechRecognition ? new SpeechRecognition() : null;
     let isRecognizing = false;
@@ -513,12 +539,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (user) {
                     try {
-                        localStorage.setItem('cachedUser', JSON.stringify({
+                        const cachedData = JSON.stringify({
                             id: user.id,
                             name: user.name || user.displayName,
                             email: user.email,
                             provider: user.provider
-                        }));
+                        });
+                        localStorage.setItem('cachedUser', cachedData);
+                        // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 인증 정보를 네이티브 암호화 저장소에도 저장 (캐시 소실 방지)
+                        if (window.ReactNativeWebView) {
+                            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'secureStore', payload: { action: 'set', key: 'cachedUser', value: cachedData } }));
+                        }
                     } catch (e) { }
                     return user;
                 }
@@ -2357,6 +2388,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 기능: 현재 위치 가져오기 → 랜드마크 검색
     // ═══════════════════════════════════════════════════════════════
     async function requestBrowserLocation() {
+        // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 expo-location 사용
+        if (window.ReactNativeWebView) {
+            try {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'getLocation', payload: {} }));
+                // 네이티브 응답은 nativeResponse 이벤트로 수신 (아래 리스너에서 처리)
+                return;
+            } catch (e) {
+                console.log('[Bridge] 네이티브 위치 요청 실패, 웹 API로 fallback');
+            }
+        }
         if (!navigator.geolocation) {
             return;
         }
@@ -2629,6 +2670,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleMicButtonClick() {
+        // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 네이티브 음성인식 사용 (WebView SpeechRecognition 미지원 대응)
+        if (isNativeApp) {
+            if (isRecognizing) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeechRecognition', payload: {} }));
+                isRecognizing = false;
+                micBtn?.classList.remove('mic-listening');
+                return;
+            }
+            const canProceed = await checkUsageLimit('detail');
+            if (!canProceed) return;
+            if (synth.speaking || synth.pending) { synth.cancel(); resetSpeechState(); }
+            isRecognizing = true;
+            micBtn?.classList.add('mic-listening');
+            // TODO: 네이티브 음성인식은 App.js에서 expo-speech 또는 Android SpeechRecognizer 연동 필요
+            // 현재는 토스트로 안내 (네이티브 음성인식 모듈 추가 후 활성화)
+            showToast('음성 인식 준비 중... (네이티브 모듈 연동 예정)');
+            setTimeout(() => { isRecognizing = false; micBtn?.classList.remove('mic-listening'); }, 3000);
+            return;
+        }
         if (!recognition) return showToast("음성 인식이 지원되지 않는 브라우저입니다.");
         if (isRecognizing) return recognition.stop();
 
@@ -3316,10 +3376,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const shareUrl = `${window.location.origin}/s/${result.id}`;
 
             // 📋 클립보드에 복사 (실패해도 계속 진행)
+            // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 expo-clipboard 사용
             let copySuccess = false;
             try {
-                await navigator.clipboard.writeText(shareUrl);
-                copySuccess = true;
+                if (window.ReactNativeWebView) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'clipboard', payload: { action: 'copy', text: shareUrl } }));
+                    copySuccess = true;
+                } else {
+                    await navigator.clipboard.writeText(shareUrl);
+                    copySuccess = true;
+                }
             } catch (clipboardError) {
                 // 클립보드 복사 실패해도 계속 진행
             }
@@ -3430,7 +3496,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const shareUrl = `${window.location.origin}/s/${result.id}`;
 
             // ✅ 핵심: 클립보드 복사 대신 새 탭으로 열기!
-            window.open(shareUrl, '_blank');
+            // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 expo-sharing 네이티브 공유 시트 사용
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'share', payload: { url: shareUrl, title: '내손안에 가이드 공유' } }));
+            } else {
+                window.open(shareUrl, '_blank');
+            }
 
             // 선택 모드 해제
             if (isSelectionMode) toggleSelectionMode(false);
@@ -5104,6 +5175,9 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsLanguageSelect?.addEventListener('change', (e) => {
         const selectedLang = e.target.value;
 
+        // ⚠️ 수정금지(승인필요): 2026-03-11 언어변경 먹통 진단 로그 (실기기 테스트 후 제거 예정)
+        console.log('[언어변경] 시작:', { 현재언어: localStorage.getItem('appLanguage'), 선택언어: selectedLang, hash: window.location.hash, cachedUser: !!localStorage.getItem('cachedUser') });
+
         // localStorage에 저장
         localStorage.setItem('appLanguage', selectedLang);
 
@@ -5135,6 +5209,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`언어가 ${langNames[selectedLang]}로 변경됩니다...`);
 
         // 페이지 새로고침 (Google Translate 적용)
+        // ⚠️ 수정금지(승인필요): 2026-03-11 언어변경 먹통 진단 로그
+        console.log('[언어변경] reload 직전:', { cachedUser: !!localStorage.getItem('cachedUser'), appLanguage: localStorage.getItem('appLanguage'), hash: window.location.hash });
         setTimeout(() => {
             window.location.reload();
         }, 500);
