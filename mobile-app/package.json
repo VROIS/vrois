@@ -36,10 +36,7 @@
     "expo-print": "~15.0.8",
     "expo-screen-orientation": "~9.0.8",
     "expo-secure-store": "~15.0.8",
-<<<<<<< HEAD
-=======
     "expo-sensors": "~15.0.8",
->>>>>>> 12b775deca3fc06929d64797b3fad120b949b448
     "expo-sharing": "~14.0.8",
     "expo-sms": "~14.0.8",
     "expo-speech": "~14.0.8",
