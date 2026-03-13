@@ -185,6 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoModal = document.getElementById('videoModal');
     const featureVideo = document.getElementById('featureVideo');
     const closeVideoModalBtn = document.getElementById('closeVideoModalBtn');
+    const youtubeModal = document.getElementById('youtubeModal');
+    const youtubeIframe = document.getElementById('youtubeIframe');
+    const closeYoutubeModalBtn = document.getElementById('closeYoutubeModalBtn');
     const featureCard2 = document.getElementById('featureCard2');
 
     // Admin Settings Page Elements
@@ -2039,6 +2042,30 @@ document.addEventListener('DOMContentLoaded', () => {
     videoModal?.addEventListener('click', (e) => {
         if (e.target === videoModal || e.target.classList.contains('relative')) {
             closeVideoModal();
+        }
+    });
+
+    function openYoutubeModal(videoId) {
+        if (youtubeModal && youtubeIframe) {
+            youtubeIframe.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+            youtubeModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeYoutubeModal() {
+        if (youtubeModal && youtubeIframe) {
+            youtubeModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            youtubeIframe.src = '';
+        }
+    }
+
+    closeYoutubeModalBtn?.addEventListener('click', closeYoutubeModal);
+
+    youtubeModal?.addEventListener('click', (e) => {
+        if (e.target === youtubeModal || e.target.classList.contains('relative')) {
+            closeYoutubeModal();
         }
     });
 
@@ -5232,9 +5259,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 푸시 알림 토글
     userPushToggle?.addEventListener('change', handleUserPushToggle);
 
-    // 사용 방법 버튼 - 유튜브 영상으로 이동
+    // 사용 방법 버튼 - 유튜브 영상을 인앱 모달로 표시
     userSettingsGuideBtn?.addEventListener('click', () => {
-        window.open('https://youtu.be/JJ65XZvBgsk', '_blank');
+        openYoutubeModal('JJ65XZvBgsk');
     });
 
     // QR 코드 모달
