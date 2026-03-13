@@ -52,3 +52,7 @@ waitForPort = 5000
 VAPID_PUBLIC_KEY = "BJB6kFYz-qc9nmG5Rc2jg4EZ0hgawD2oaHu1oPPlSwrvZ7SEytQdFU1w3VP--ZLcAyp7XatZJjul6RDtVhWESt0"
 VITE_VAPID_PUBLIC_KEY = "BEuc2WPE8n32XPc_uDZ_Na-vSgVvx_P4uRsSFuTYi-oD1kobkIBKtSFbtnneebC3wt8OnknpizRM98NCLnuHa38"
 VAPID_PRIVATE_KEY = "mdVtGXI045E1cWPk9Hrpdx9phWEoUP2Ap2WdZ612VZI"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
