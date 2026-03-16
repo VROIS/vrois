@@ -78,7 +78,7 @@
     "nodemailer": "^8.0.1",
     "openid-client": "^6.8.0",
     "passport": "^0.7.0",
-    "passport-apple": "^2.0.0",
+    "passport-apple": "^2.0.2",
     "passport-google-oauth20": "^2.0.0",
     "passport-kakao": "^1.0.1",
     "passport-local": "^1.0.0",
