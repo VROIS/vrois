@@ -2351,11 +2351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showPage(mainPage);
         cameraStartOverlay.classList.add('hidden');
 
-        if (synth && !synth.speaking) {
-            const unlockUtterance = new SpeechSynthesisUtterance('');
-            synth.speak(unlockUtterance);
-            synth.cancel();
-        }
+        // 2026-03-17: speech unlock은 initSpeechUnlock() IIFE로 통합 (첫 터치/클릭 시 자동 해제)
 
         mainLoader.classList.remove('hidden');
 
@@ -2446,35 +2442,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const canProceed = await checkUsageLimit('detail');
         if (!canProceed) return;
 
-        // ⚠️ 수정금지(승인필요): 2026-03-14 네이티브 이미지피커 우선 — 앱에서는 expo-image-picker 사용, 웹은 기존 getUserMedia 유지
-        if (isNativeApp && window.ReactNativeWebView) {
-            // 이전 리스너가 남아있으면 제거 (이중 호출 방지)
-            if (window.__pendingImageListener) {
-                window.removeEventListener('nativeResponse', window.__pendingImageListener);
-                window.__pendingImageListener = null;
-            }
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'pickImage', payload: { source: 'camera' } }));
-            // 네이티브 응답 1회성 리스너 (imageResult 수신 → processImage 호출)
-            const onImageResult = (e) => {
-                const data = e.detail;
-                if (data.type === 'imageResult') {
-                    window.removeEventListener('nativeResponse', onImageResult);
-                    window.__pendingImageListener = null;
-                    if (data.base64 && !data.error && !data.canceled) {
-                        requestBrowserLocation();
-                        processImage('data:image/jpeg;base64,' + data.base64, shootBtn);
-                    } else if (data.error) {
-                        showToast('카메라 권한이 필요합니다.');
-                    }
-                    // canceled → 리스너 이미 제거됨, 아무것도 안 함
-                }
-            };
-            window.__pendingImageListener = onImageResult;
-            window.addEventListener('nativeResponse', onImageResult);
-            return;
-        }
-
-        // 웹 fallback: 기존 getUserMedia → canvas → base64
+        // ⚠️ 수정금지(승인필요): 2026-03-17 촬영 웹 통일 — 네이티브 이미지피커 분기 제거
+        // getUserMedia는 Android/iOS WebView 모두 지원됨 (App.js에 권한 설정 이미 있음)
+        // 웹과 동일하게 라이브뷰 화면에서 바로 캡처 (1단계)
+        // getUserMedia → canvas → base64
         if (!video.videoWidth || !video.videoHeight) return;
 
         canvas.width = video.videoWidth;
@@ -2781,26 +2752,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleMicButtonClick() {
-        // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지 — 앱에서는 네이티브 음성인식 사용 (WebView SpeechRecognition 미지원 대응)
-        if (isNativeApp) {
-            if (isRecognizing) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'stopSpeechRecognition', payload: {} }));
-                isRecognizing = false;
-                micBtn?.classList.remove('mic-listening');
-                return;
-            }
-            const canProceed = await checkUsageLimit('detail');
-            if (!canProceed) return;
-            if (synth.speaking || synth.pending) { synth.cancel(); resetSpeechState(); }
-            isRecognizing = true;
-            micBtn?.classList.add('mic-listening');
-            // TODO: 네이티브 음성인식은 App.js에서 expo-speech 또는 Android SpeechRecognizer 연동 필요
-            // 현재는 토스트로 안내 (네이티브 음성인식 모듈 추가 후 활성화)
-            showToast('음성 인식 준비 중... (네이티브 모듈 연동 예정)');
-            setTimeout(() => { isRecognizing = false; micBtn?.classList.remove('mic-listening'); }, 3000);
-            return;
-        }
-        if (!recognition) return showToast("음성 인식이 지원되지 않는 브라우저입니다.");
+        // ⚠️ 수정금지(승인필요): 2026-03-17 음성입력 웹 통일 — 네이티브 분기 제거
+        // SpeechRecognition은 Android/iOS WebView 모두 미지원 (Chromium Issue #40417848, WontFix)
+        // 웹 브라우저에서는 Web Speech API 사용, WebView에서는 미지원 안내
+        if (!recognition) return showToast("음성 인식이 지원되지 않습니다. 텍스트로 질문해주세요.");
         if (isRecognizing) return recognition.stop();
 
         // 🔊 마이크 시작 전 음성 재생 즉시 중지
@@ -3795,44 +3750,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ⚠️ 2025.11.12 UX FIX: Direct URL 방식 - iOS Safari 팝업 차단 우회
     // 🌐 2025.12.03 언어 파라미터 추가 - 사용자 언어로 공유페이지 자동 번역
     // 핵심: 인증 체크 후 직접 URL로 window.open() (about:blank 제거!)
-    window.handleFeaturedClick = async function (shareUrl) {
-
-        // 🌐 사용자 언어 파라미터 추가 (한국어 제외)
+    // ⚠️ 수정금지(승인필요): 2026-03-17 추천갤러리 클릭 — 인증 체크 제거 (공개 콘텐츠, 누구나 접근 가능)
+    // X 버튼은 closePageOverlay()로 단순 닫기만 수행 (리다이렉트 없음, 부모 보관함 유지)
+    window.handleFeaturedClick = function (shareUrl) {
         const translatedUrl = addLangToUrl(shareUrl);
-
-        try {
-            // 1️⃣ 인증 상태 확인
-            const response = await fetch('/api/auth/user', { credentials: 'include' });
-
-            if (response.ok) {
-                // ⚠️ 수정금지(승인필요) — 공유페이지를 SPA 오버레이로 열기 (Claude Opus 4.6, 2026-03-09)
-                openPageOverlay(translatedUrl);
-            } else {
-                // 3️⃣ 미인증 → OAuth 모달 표시
-                localStorage.setItem('pendingShareUrl', shareUrl);
-
-                // 인증 모달 표시
-                const authModal = document.getElementById('authModal');
-                if (authModal) {
-                    authModal.classList.remove('hidden');
-                } else {
-                    console.error('❌ Auth modal not found, falling back to Kakao login');
-                    window.location.href = '/api/auth/kakao';
-                }
-            }
-        } catch (error) {
-            // 에러 발생 시 인증 모달 표시
-            localStorage.setItem('pendingShareUrl', shareUrl);
-
-            // 인증 모달 표시
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                authModal.classList.remove('hidden');
-            } else {
-                console.error('❌ Auth modal not found, falling back to Kakao login');
-                window.location.href = '/api/auth/kakao';
-            }
-        }
+        openPageOverlay(translatedUrl);
     };
 
     async function renderArchive() {
@@ -4020,11 +3942,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- TTS Functions ---
-    // ⚠️ 2026-03-05: 큐에만 추가 (자동 재생 안 함)
-    // 이유: 앱 브라우저가 자동 음성 차단 + 구글 번역 시간 확보
-    // 사용자가 ▶ 버튼 누르면 onAudioBtnClick() → speakNext()로 재생
+    // ⚠️ 수정금지(승인필요): 2026-03-17 TTS 자동재생 잠금 해제 — Chrome 71+에서 사용자 제스처 없이 synth.speak() 차단됨
+    // 첫 사용자 터치/클릭 시 무음 utterance를 재생하여 SpeechSynthesis를 "잠금 해제"
+    // 출처: Chrome Web Speech API 정책 (사용자 제스처 필수)
+    (function initSpeechUnlock() {
+        let unlocked = false;
+        function unlock() {
+            if (unlocked) return;
+            unlocked = true;
+            const dummy = new SpeechSynthesisUtterance('');
+            dummy.volume = 0;
+            dummy.rate = 10; // 최대 속도로 즉시 완료
+            synth.speak(dummy);
+            synth.cancel(); // 즉시 취소 (소리 안 남)
+            document.removeEventListener('touchstart', unlock);
+            document.removeEventListener('click', unlock);
+        }
+        document.addEventListener('touchstart', unlock, { once: true });
+        document.addEventListener('click', unlock, { once: true });
+    })();
+
+    // ⚠️ 수정금지(승인필요): 2026-03-17 긴 문장 분할 — 200자 초과 시 쉼표/마침표 기준 추가 분할
+    // Chrome에서 15초 이상 utterance는 무음 정지 버그 발생 (Google 클라우드 음성)
+    // 출처: woollsta/gist (Chrome Long Text Fix), Caktus Group "The Halting Problem"
     function queueForSpeech(text, element) {
-        utteranceQueue.push({ text, element });
+        const MAX_CHARS = 200;
+        if (text.length <= MAX_CHARS) {
+            utteranceQueue.push({ text, element });
+            return;
+        }
+        // 긴 문장은 쉼표/마침표/물음표/느낌표 기준으로 분할
+        const chunks = [];
+        let remaining = text;
+        while (remaining.length > MAX_CHARS) {
+            let splitIdx = -1;
+            // MAX_CHARS 이내에서 가장 마지막 구분자 찾기
+            for (let i = MAX_CHARS; i >= 50; i--) {
+                if (',，.。!！?？;；'.includes(remaining[i])) {
+                    splitIdx = i + 1;
+                    break;
+                }
+            }
+            if (splitIdx === -1) splitIdx = MAX_CHARS; // 구분자 없으면 강제 분할
+            chunks.push(remaining.substring(0, splitIdx).trim());
+            remaining = remaining.substring(splitIdx).trim();
+        }
+        if (remaining) chunks.push(remaining);
+        // 모든 청크가 같은 element를 공유 (하이라이트 유지)
+        chunks.forEach(chunk => utteranceQueue.push({ text: chunk, element }));
     }
 
     async function speakNext() {
@@ -4082,6 +4047,9 @@ document.addEventListener('DOMContentLoaded', () => {
             translatedText = element.innerText.trim() || text;
         }
         const utterance = new SpeechSynthesisUtterance(translatedText);
+        // ⚠️ 수정금지(승인필요): 2026-03-17 GC 방지 — Chrome이 utterance를 가비지 수집하면 onend 안 불림
+        // window에 참조를 유지하여 GC 방지 (검증된 Chrome 버그 워크어라운드)
+        window._currentUtterance = utterance;
 
         // 🌐 2025-12-24: 앱 언어 최우선 (저장된 언어 무시, 번역된 텍스트에 맞춤)
         const userLang = localStorage.getItem('appLanguage') || 'ko';
@@ -4156,8 +4124,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // ⚠️ 수정금지(승인필요): 2026-03-17 onend 미발동 워치독 — Chrome에서 onend가 안 불리는 버그 대응
+        // utterance 텍스트 길이 기반 타임아웃 (한국어 ~4자/초, 영어 ~3단어/초 + 여유 5초)
+        // 출처: Chromium 버그 — SpeechSynthesisUtterance onend not firing
+        const estimatedDuration = Math.max((translatedText.length / 4) * 1000, 3000) + 5000;
+        const watchdog = setTimeout(() => {
+            // synth가 아직 speaking이면 onend 미발동 → 강제 다음 문장
+            if (synth.speaking) {
+                console.warn('[TTS] onend 미발동 워치독 발동 → 강제 다음 문장');
+                synth.cancel(); // 현재 utterance 강제 중지
+                element.classList.remove('speaking');
+                window.__ttsErrorCount = 0;
+                if (!isPaused) {
+                    speakNext();
+                }
+            }
+        }, estimatedDuration);
+
+        // onend/onerror 발동 시 워치독 해제
+        const origOnEnd = utterance.onend;
+        utterance.onend = () => {
+            clearTimeout(watchdog);
+            origOnEnd?.();
+        };
+        const origOnError = utterance.onerror;
+        utterance.onerror = (e) => {
+            clearTimeout(watchdog);
+            origOnError?.(e);
+        };
+
         // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 TTS 분기 (삼성 Web Speech API 미작동 해결)
         if (isNativeApp && window.ReactNativeWebView) {
+            clearTimeout(watchdog); // 네이티브 TTS는 자체 완료 이벤트 사용 → 웹 워치독 불필요
             updateAudioButton('pause');
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'speak',

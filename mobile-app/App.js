@@ -53,10 +53,14 @@ const IOS_VOICE_MAP = {
   'es-ES': 'com.apple.ttsbundle.Monica-compact',
 };
 
-// iOS: 기본 Safari UA 사용 (Apple 심사에서 UA 위조 시 거절 가능)
+// ⚠️ 수정금지(승인필요): 2026-03-17 플랫폼별 UA 설정
 // Android: Chrome UA 강제 (WebView 호환성)
+// iOS: Safari UA 설정 — WKWebView 기본 UA로는 Google OAuth 403 차단됨
+// Google은 embedded WebView에서 OAuth를 차단하므로 Safari UA로 우회 필요
 const ANDROID_USER_AGENT =
   'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36';
+const IOS_USER_AGENT =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 
 // ⚠️ 수정금지(승인필요): 2026-03-12 SafeAreaView가 safe-area 처리하므로 CSS 이중 패딩 제거
 // Z Fold 등 큰 safe-area-inset-bottom 기기에서 하단 버튼 밀림 방지
@@ -611,7 +615,8 @@ export default function App() {
         onMessage={handleMessage}
         androidLayerType="hardware"
         onAndroidPermissionRequest={handlePermissionRequest}
-        {...(Platform.OS === 'android' && { userAgent: ANDROID_USER_AGENT })}
+        // ⚠️ 수정금지(승인필요): 2026-03-17 플랫폼별 UA 적용 (Google OAuth 403 방지)
+        userAgent={Platform.OS === 'android' ? ANDROID_USER_AGENT : IOS_USER_AGENT}
       />
     </SafeAreaView>
   );
