@@ -904,7 +904,8 @@
     <!-- ⚠️ 수정금지(승인필요): 독립페이지 SPA 오버레이 (iframe 방식, window.open 대체) -->
     <!-- ⚠️ 수정금지(승인필요) — overlay X 버튼 삭제: iframe 내부 자체 버튼이 가려지는 겹침 해결 (Claude Opus 4.6, 2026-03-09) -->
     <div id="pageOverlay" class="fixed inset-0 z-[9999] bg-white hidden" style="pointer-events: auto;">
-        <iframe id="pageOverlayIframe" class="w-full h-full border-0" src="" allow="clipboard-write"></iframe>
+        <!-- ⚠️ 수정금지(승인필요): 2026-03-19 iframe 권한 — camera/microphone/geolocation 추가로 오버레이 전환 시 권한 세션 유지 -->
+        <iframe id="pageOverlayIframe" class="w-full h-full border-0" src="" allow="clipboard-write; camera; microphone; geolocation"></iframe>
     </div>
 
     <!-- Features Page -->

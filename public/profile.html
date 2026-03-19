@@ -476,14 +476,8 @@
                 <div class="w-10"></div>
                 <h1 class="flex-1 text-center text-lg font-bold text-gray-900"
                     style="font-family: 'Pretendard', sans-serif;">프로필</h1>
-                <button id="backBtn"
-                    class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"
-                    data-testid="button-back">
-                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <!-- ⚠️ 수정금지(승인필요): 2026-03-19 backBtn 삭제 — 오버레이 내부 리턴 버튼이 웹에서 랜딩페이지로 이동하는 문제. "완료" 버튼으로 정상 복귀 -->
+                <div class="w-10"></div>
             </div>
         </header>
 
@@ -1020,14 +1014,7 @@
             }
         }
 
-        // ⚠️ 수정금지(승인필요): SPA 오버레이 닫기 (iframe 내부 → 부모에 postMessage)
-        document.getElementById('backBtn').addEventListener('click', () => {
-            if (window.parent !== window) {
-                window.parent.postMessage({ type: 'closeOverlay' }, '*');
-            } else {
-                window.close();
-            }
-        });
+        // ⚠️ 수정금지(승인필요): 2026-03-19 backBtn 이벤트 리스너 삭제 — HTML 요소와 함께 제거됨 (완료 버튼으로 대체)
 
         function showAuthModal() {
             const modal = document.getElementById('authModal');

@@ -973,14 +973,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
    */
   app.post('/api/guides/batch', async (req: any, res) => {
     try {
-      // 비로그인 사용자도 저장 가능 (userId는 optional)
+      // ⚠️ 수정금지(승인필요): 2026-03-17 비로그인 사용자 DB 저장 차단 — FK 제약조건 위반 방지
+      // 비로그인 시 프론트엔드 IndexedDB에만 저장됨 (서버 저장은 로그인 필수)
       const userId = req.user ? getUserId(req.user) : null;
       const { guides: guidesData, language: userLanguage } = req.body;
-      
+
       if (!Array.isArray(guidesData) || guidesData.length === 0) {
         return res.status(400).json({ message: "guides 배열이 비어있습니다." });
       }
-      
+
+      // 비로그인 사용자는 DB 저장 건너뛰기 (IndexedDB에 이미 저장됨)
+      if (!userId) {
+        console.log(`📦 비로그인 사용자 → DB 저장 건너뛰기 (${guidesData.length}개 가이드)`);
+        return res.json({ guideIds: [], message: "로컬에 저장되었습니다." });
+      }
+
       console.log(`📦 배치 저장 시작: ${guidesData.length}개 가이드 (userId: ${userId})`);
       
       const savedGuideIds: string[] = [];

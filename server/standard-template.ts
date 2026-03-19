@@ -487,7 +487,8 @@ export function generateStandardShareHTML(data: StandardTemplateData): string {
     <!-- 갤러리 뷰 -->
     <div id="gallery-view">
         <!-- ⚠️ 수정금지(승인필요) — 공유페이지 X 닫기 버튼: position:fixed, 부모 display:none 시 함께 숨김, SPA 오버레이이므로 postMessage 사용 (Claude Sonnet 4.6, 2026-03-10) -->
-        <button id="gallery-close" onclick="if(window.ReactNativeWebView){window.ReactNativeWebView.postMessage(JSON.stringify({type:'closeWindow',payload:{}}))}else if(window.parent!==window){window.parent.postMessage({type:'closeOverlay'},'*')}else{window.close()}" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.2s ease;" aria-label="닫기">
+        <!-- ⚠️ 수정금지(승인필요): 2026-03-19 parent→top 변경 — 2중 iframe(admin-dashboard→공유페이지) 대비 안전장치 -->
+        <button id="gallery-close" onclick="if(window.ReactNativeWebView){window.ReactNativeWebView.postMessage(JSON.stringify({type:'closeWindow',payload:{}}))}else if(window.top!==window){window.top.postMessage({type:'closeOverlay'},'*')}else{window.close()}" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); color: #4285F4; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.2s ease;" aria-label="닫기">
             <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>

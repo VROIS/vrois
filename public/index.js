@@ -54,9 +54,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('[Bridge] 네이티브 저장소에서 인증 캐시 복원 완료');
                 }
             }
+            // ⚠️ 수정금지(승인필요): 2026-03-19 네이티브 위치 응답 → currentGPS 설정 + 랜드마크 검색 + UI 업데이트
+            // 앱(WebView): expo-location 응답 처리 / 실패 시 웹 geolocation 폴백은 기존 로직에서 처리
             if (data.type === 'location' && !data.error) {
-                // 네이티브 위치 응답 처리 — 위치 기반 기능에 전달
                 console.log('[Bridge] 네이티브 위치:', data.latitude, data.longitude);
+                window.currentGPS = {
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    locationName: null
+                };
+                // 랜드마크 검색 후 UI 업데이트 (loadGoogleMapsAPI는 DOMContentLoaded 후 정의됨 — 네이티브 응답은 항상 이후 도착)
+                try {
+                    loadGoogleMapsAPI(async () => {
+                        const landmark = await getNearbyLandmark(data.latitude, data.longitude);
+                        if (landmark && window.currentGPS) {
+                            window.currentGPS.locationName = landmark;
+                        }
+                        updateLocationInfoUI(landmark || '위치 정보 없음');
+                    });
+                } catch (err) {
+                    console.warn('[Bridge] 랜드마크 검색 실패:', err);
+                }
             }
         });
     }
@@ -244,7 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition = SpeechRecognition ? new SpeechRecognition() : null;
+    // ⚠️ 수정금지(승인필요): 2026-03-19 앱/웹 자동 감지 — WebView에서 SpeechRecognition 미지원 (Chromium Issue #40417848)
+    // 앱: recognition=null → 기존 안내 메시지 표시 / 웹: 기존 동작 유지
+    let recognition = (SpeechRecognition && !window.ReactNativeWebView) ? new SpeechRecognition() : null;
     let isRecognizing = false;
 
     // 🚨 2026-01-24: AI 중복 호출 방지 플래그 (비용 절감)
@@ -3945,18 +3965,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ⚠️ 수정금지(승인필요): 2026-03-17 TTS 자동재생 잠금 해제 — Chrome 71+에서 사용자 제스처 없이 synth.speak() 차단됨
     // 첫 사용자 터치/클릭 시 무음 utterance를 재생하여 SpeechSynthesis를 "잠금 해제"
     // 출처: Chrome Web Speech API 정책 (사용자 제스처 필수)
+    // ⚠️ 수정금지(승인필요): 2026-03-17 음성 세션 잠금 해제 — 첫 터치 시 무음 utterance로 iOS/Chrome 잠금 해제
+    // synth.cancel() 제거 — iOS WKWebView에서 cancel()이 음성 세션을 불안정하게 만듦
+    // 빈 문자열 ' '(공백 1개)로 자연 종료 유도 (빈 ''는 iOS에서 무시될 수 있음)
     (function initSpeechUnlock() {
         let unlocked = false;
         function unlock() {
             if (unlocked) return;
             unlocked = true;
-            const dummy = new SpeechSynthesisUtterance('');
-            dummy.volume = 0;
-            dummy.rate = 10; // 최대 속도로 즉시 완료
+            const dummy = new SpeechSynthesisUtterance(' ');
+            dummy.volume = 0.01; // 0이면 iOS에서 무시될 수 있음 → 거의 무음
+            dummy.rate = 10;
+            dummy.onend = () => { console.log('[TTS] 음성 세션 잠금 해제 완료'); };
             synth.speak(dummy);
-            synth.cancel(); // 즉시 취소 (소리 안 남)
-            document.removeEventListener('touchstart', unlock);
-            document.removeEventListener('click', unlock);
+            // synth.cancel() 제거 — iOS에서 세션 파괴 방지
         }
         document.addEventListener('touchstart', unlock, { once: true });
         document.addEventListener('click', unlock, { once: true });
@@ -4098,6 +4120,11 @@ document.addEventListener('DOMContentLoaded', () => {
             utterance.pitch = 1.0;
         }
 
+        // ⚠️ 수정금지(승인필요): 2026-03-17 iOS WKWebView 디버깅 — 음성 시작 확인
+        utterance.onstart = () => {
+            console.log(`[TTS] 재생 시작: "${translatedText.substring(0, 30)}..." (voice: ${utterance.voice?.name || 'default'})`);
+        };
+
         // ⚠️ 2026-03-05: 연속 에러 카운터 (무한 루프 방지)
         utterance.onend = () => {
             element.classList.remove('speaking');
@@ -4124,20 +4151,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // ⚠️ 수정금지(승인필요): 2026-03-17 onend 미발동 워치독 — Chrome에서 onend가 안 불리는 버그 대응
-        // utterance 텍스트 길이 기반 타임아웃 (한국어 ~4자/초, 영어 ~3단어/초 + 여유 5초)
-        // 출처: Chromium 버그 — SpeechSynthesisUtterance onend not firing
-        const estimatedDuration = Math.max((translatedText.length / 4) * 1000, 3000) + 5000;
+        // ⚠️ 수정금지(승인필요): 2026-03-17 onend 미발동 워치독 — Chrome/iOS에서 onend 안 불리는 버그 대응
+        // utterance 텍스트 길이 기반 타임아웃 (한국어 ~4자/초 + iOS 여유 8초)
+        // iOS WKWebView: Siri 합성 지연 + onend 미발동 빈번 → 여유 시간 충분히
+        const estimatedDuration = Math.max((translatedText.length / 4) * 1000, 3000) + 8000;
         const watchdog = setTimeout(() => {
-            // synth가 아직 speaking이면 onend 미발동 → 강제 다음 문장
-            if (synth.speaking) {
-                console.warn('[TTS] onend 미발동 워치독 발동 → 강제 다음 문장');
-                synth.cancel(); // 현재 utterance 강제 중지
-                element.classList.remove('speaking');
-                window.__ttsErrorCount = 0;
-                if (!isPaused) {
-                    speakNext();
-                }
+            // synth.speaking이든 아니든, onend가 안 불렸으면 강제 진행
+            // iOS에서 synth.speaking이 false인데 onend도 안 불리는 경우 존재
+            console.warn('[TTS] onend 미발동 워치독 발동 → 강제 다음 문장');
+            synth.cancel();
+            element.classList.remove('speaking');
+            window.__ttsErrorCount = 0;
+            if (!isPaused) {
+                speakNext();
             }
         }, estimatedDuration);
 
@@ -4193,6 +4219,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         updateAudioButton('pause');
+        // ⚠️ 수정금지(승인필요): 2026-03-17 iOS WKWebView 안전장치 — speak() 전에 이전 utterance 정리
+        // iOS에서 synth.speaking이 true인 상태에서 새 speak() 호출하면 무시될 수 있음
+        if (synth.speaking || synth.pending) {
+            synth.cancel();
+        }
         synth.speak(utterance);
     }
 
