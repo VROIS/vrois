@@ -76,6 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('[Bridge] 랜드마크 검색 실패:', err);
                 }
             }
+            // ⚠️ 수정금지(승인필요): 2026-03-20 네이티브 음성인식 결과 수신 → processTextQuery 또는 에러 처리
+            if (data.type === 'speechResult') {
+                const micBtn = document.getElementById('micBtn');
+                micBtn?.classList.remove('mic-listening');
+                if (data.text) {
+                    processTextQuery(data.text);
+                } else if (data.error) {
+                    console.warn('[Bridge] 음성인식 에러:', data.error);
+                    showToast('음성을 듣지 못했어요. 다시 시도해볼까요?');
+                }
+            }
         });
     }
 
@@ -2772,9 +2783,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleMicButtonClick() {
-        // ⚠️ 수정금지(승인필요): 2026-03-17 음성입력 웹 통일 — 네이티브 분기 제거
-        // SpeechRecognition은 Android/iOS WebView 모두 미지원 (Chromium Issue #40417848, WontFix)
-        // 웹 브라우저에서는 Web Speech API 사용, WebView에서는 미지원 안내
+        // ⚠️ 수정금지(승인필요): 2026-03-20 마이크 — 네이티브 우선 → 웹 폴백
+        // 앱(WebView): postMessage로 네이티브 음성인식 호출 (expo-speech-recognition)
+        // 웹(브라우저): Web Speech API 사용
+        if (window.ReactNativeWebView) {
+            // 앱: 네이티브 음성인식 브릿지
+            const lang = localStorage.getItem('appLanguage') || 'ko-KR';
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'startSpeechRecognition', payload: { language: lang }
+            }));
+            micBtn?.classList.add('mic-listening');
+            return;
+        }
         if (!recognition) return showToast("음성 인식이 지원되지 않습니다. 텍스트로 질문해주세요.");
         if (isRecognizing) return recognition.stop();
 
@@ -5568,71 +5588,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return (hasTouch && isSmallScreen) || mobileUA;
     }
 
-    googleLoginBtn?.addEventListener('click', () => {
-
-        // 모바일/PC 모두 새 창 열기 (상태 유지 위해!)
-        const width = 500;
-        const height = 600;
+    // ⚠️ 수정금지(승인필요): 2026-03-20 OAuth 공용 함수 — WebView에서는 location.href 직접 이동, 웹에서는 팝업
+    function openOAuthFlow(url, windowName) {
+        if (isNativeApp) {
+            window.location.href = url;
+            return;
+        }
+        const width = 500, height = 600;
         const left = (window.screen.width - width) / 2;
         const top = (window.screen.height - height) / 2;
-
-        const popup = window.open(
-            '/api/auth/google',
-            'google_oauth',
-            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
-        );
-
+        const popup = window.open(url, windowName,
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`);
         if (!popup || popup.closed) {
-            console.error('❌ 팝업이 차단되었습니다. 같은 탭으로 진행합니다.');
-            window.location.href = '/api/auth/google';
+            window.location.href = url;
         }
-    });
-
-    kakaoLoginBtn?.addEventListener('click', () => {
-
-        // 모바일/PC 모두 새 창 열기 (상태 유지 위해!)
-        const width = 500;
-        const height = 600;
-        const left = (window.screen.width - width) / 2;
-        const top = (window.screen.height - height) / 2;
-
-        const popup = window.open(
-            '/api/auth/kakao',
-            'kakao_oauth',
-            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
-        );
-
-        if (!popup || popup.closed) {
-            console.error('❌ 팝업이 차단되었습니다. 같은 탭으로 진행합니다.');
-            window.location.href = '/api/auth/kakao';
-        }
-    });
-
-    // ⚠️ 수정금지(승인필요): Apple 로그인 버튼 — iOS 네이티브 앱에서만 표시 (2026-03-14)
-    if (isNativeApp && detectPlatform() === 'ios') {
-        if (appleLoginBtn) appleLoginBtn.style.display = 'flex';
     }
 
-    // ⚠️ 수정금지(승인필요): Apple 로그인 클릭 핸들러 (2026-03-14)
-    appleLoginBtn?.addEventListener('click', () => {
+    googleLoginBtn?.addEventListener('click', () => openOAuthFlow('/api/auth/google', 'google_oauth'));
+    kakaoLoginBtn?.addEventListener('click', () => openOAuthFlow('/api/auth/kakao', 'kakao_oauth'));
 
-        // 모바일/PC 모두 새 창 열기 (상태 유지 위해!)
-        const width = 500;
-        const height = 600;
-        const left = (window.screen.width - width) / 2;
-        const top = (window.screen.height - height) / 2;
-
-        const popup = window.open(
-            '/api/auth/apple',
-            'apple_oauth',
-            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
-        );
-
-        if (!popup || popup.closed) {
-            console.error('❌ 팝업이 차단되었습니다. 같은 탭으로 진행합니다.');
-            window.location.href = '/api/auth/apple';
-        }
-    });
+    // ⚠️ 수정금지(승인필요): 2026-03-20 Apple 로그인 버튼 — iOS 앱 OR iOS 브라우저에서 표시 (detectPlatform ios)
+    if (detectPlatform() === 'ios') {
+        if (appleLoginBtn) appleLoginBtn.style.display = 'flex';
+    }
+    appleLoginBtn?.addEventListener('click', () => openOAuthFlow('/api/auth/apple', 'apple_oauth'));
 
     // OAuth 팝업 닫힌 후 인증 상태 확인 및 Featured Gallery 열기
     async function checkAuthAndOpenPendingUrl() {

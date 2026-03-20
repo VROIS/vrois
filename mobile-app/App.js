@@ -5,9 +5,8 @@ import { useRef, useEffect, useCallback } from 'react';
 import Constants from 'expo-constants';
 // ⚠️ 수정금지(승인필요): 2026-03-12 Google OAuth 외부 브라우저 + Stripe 결제용
 import * as WebBrowser from 'expo-web-browser';
-// ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 음성인식 (마이크 입력)
-// Replit Claude가 expo-speech-recognition 설치 후 활성화
-// import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+// ⚠️ 수정금지(승인필요): 2026-03-20 네이티브 음성인식 활성화 — expo-speech-recognition v3.0.1 (Expo 54 호환)
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 
 // ⚠️ 수정금지(승인필요): 2026-03-11 네이티브 브릿지용 모듈 import
 import * as Speech from 'expo-speech';
@@ -144,6 +143,15 @@ export default function App() {
       `);
     }
   }, []);
+
+  // ⚠️ 수정금지(승인필요): 2026-03-20 네이티브 음성인식 결과/에러 → 웹에 전달
+  useSpeechRecognitionEvent('result', (event) => {
+    const text = event.results?.[0]?.transcript || '';
+    if (text) sendToWeb('speechResult', { text });
+  });
+  useSpeechRecognitionEvent('error', (event) => {
+    sendToWeb('speechResult', { error: event.error || 'unknown' });
+  });
 
   // ⚠️ 수정금지(승인필요): 2026-03-11 웹 → 네이티브 메시지 처리 (onMessage 핸들러)
   const handleMessage = useCallback(async (event) => {
@@ -318,21 +326,23 @@ export default function App() {
 
         // --- 네이티브 음성인식 (마이크 입력) ---
         case 'startSpeechRecognition': {
-          // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 음성인식 시작
-          // expo-speech-recognition 설치 후 아래 주석 해제
-          // const lang = payload?.language || 'ko-KR';
-          // try {
-          //   await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-          //   ExpoSpeechRecognitionModule.start({ lang, interimResults: false });
-          // } catch (e) {
-          //   sendToWeb('speechResult', { error: e.message });
-          // }
-          sendToWeb('speechResult', { error: 'speech_not_ready', message: '음성인식 모듈 설치 대기 중' });
+          // ⚠️ 수정금지(승인필요): 2026-03-20 네이티브 음성인식 시작 — expo-speech-recognition 활성화
+          const lang = payload?.language || 'ko-KR';
+          try {
+            const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+            if (!granted) {
+              sendToWeb('speechResult', { error: '마이크 권한이 필요합니다' });
+              break;
+            }
+            ExpoSpeechRecognitionModule.start({ lang, interimResults: false });
+          } catch (e) {
+            sendToWeb('speechResult', { error: e.message });
+          }
           break;
         }
         case 'stopSpeechRecognition': {
-          // ⚠️ 수정금지(승인필요): 2026-03-12 네이티브 음성인식 중지
-          // ExpoSpeechRecognitionModule.stop();
+          // ⚠️ 수정금지(승인필요): 2026-03-20 네이티브 음성인식 중지
+          ExpoSpeechRecognitionModule.stop();
           break;
         }
 
