@@ -623,13 +623,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('cachedUser');
                 return null;
             }
-            const cached = localStorage.getItem('cachedUser');
-            if (cached) {
-                try {
-                    const parsedUser = JSON.parse(cached);
-                    return parsedUser;
-                } catch (e) { }
-            }
+            // ⚠️ 수정금지(승인필요): 2026-03-20 서버 401(미인증) → cachedUser 삭제. 세션 무효 = 캐시도 무효
+            localStorage.removeItem('cachedUser');
             return null;
         } catch (error) {
             console.error('Auth check error:', error);

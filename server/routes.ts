@@ -803,8 +803,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         res.clearCookie('connect.sid');
         console.log('✅ Logged out successfully');
-        // ⚠️ 2025.11.02: 로그아웃 후 보관함으로 (랜딩 페이지 금지)
-        res.redirect('/archive');
+        // ⚠️ 수정금지(승인필요): 2026-03-20 로그아웃 후 랜딩페이지로 — 비인증자는 메인페이지 접근 불가, 재인증 필수
+        res.redirect('/');
       });
     });
   });

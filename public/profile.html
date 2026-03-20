@@ -455,7 +455,8 @@
                             </div>
                             <div class="flex-1">
                                 <p class="font-bold text-gray-900">미인증 상태</p>
-                                <button onclick="window.top.location.href='/api/auth/logout'"
+                                <!-- ⚠️ 수정금지(승인필요): 2026-03-20 로그아웃 시 모든 인증 캐시 삭제 후 서버 로그아웃 → 랜딩페이지 -->
+                                <button onclick="localStorage.removeItem('cachedUser'); localStorage.removeItem('auth_success'); localStorage.removeItem('adminAuthenticated'); localStorage.removeItem('adminAuthTime'); window.top.location.href='/api/auth/logout'"
                                     class="text-sm text-red-500 font-semibold hover:text-red-700 transition"
                                     data-testid="button-logout">로그아웃</button>
                             </div>
