@@ -1026,9 +1026,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             voiceName: voiceName || null // TTS 음성 이름
           };
           
-          const savedGuide = await storage.createGuide(userId || 'anonymous', guideData);
+          // ⚠️ 수정금지(승인필요): 2026-03-19 'anonymous' 폴백 제거 — userId는 라인 986 가드에서 이미 검증됨
+          const savedGuide = await storage.createGuide(userId, guideData);
           savedGuideIds.push(savedGuide.id);
-          console.log(`✅ guides DB 저장 완료: ${savedGuide.id} (${title}, localId: ${localId}, userId: ${userId || 'anonymous'})`);
+          console.log(`✅ guides DB 저장 완료: ${savedGuide.id} (${title}, localId: ${localId}, userId: ${userId})`);
           
         } catch (itemError) {
           console.error(`❌ 가이드 저장 실패:`, itemError);

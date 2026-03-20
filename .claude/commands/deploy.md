@@ -3,7 +3,7 @@
 변경사항을 커밋하고 GitHub에 push합니다.
 push 후 Replit에서 Pull + Deploy, EAS에서 앱 빌드가 진행됩니다.
 
-## 실행 순서
+## 실행 순서  **커밋전 Simplify+Review Skills 사용 2단계 검증 필수**
 
 ### 1. 변경사항 확인
 - `git status`로 변경 파일 목록 확인

@@ -54,61 +54,15 @@ export default defineConfig({
           }
         });
         
-        const assetsDir = path.resolve(__dirname, 'public/assets');
-        const destAssetsDir = path.resolve(__dirname, 'dist/public/assets');
-        if (fs.existsSync(assetsDir)) {
-          if (!fs.existsSync(destAssetsDir)) {
-            fs.mkdirSync(destAssetsDir, { recursive: true });
+        // ⚠️ 수정금지(승인필요): 2026-03-19 모든 디렉토리 재귀 복사 — 서브디렉토리 대응 (fs.cpSync, Node 16.7+)
+        const dirsToCopy = ['assets', 'shared-template', 'images', 'components'];
+        dirsToCopy.forEach(dir => {
+          const src = path.resolve(__dirname, 'public', dir);
+          const dest = path.resolve(__dirname, 'dist/public', dir);
+          if (fs.existsSync(src)) {
+            fs.cpSync(src, dest, { recursive: true });
           }
-          fs.readdirSync(assetsDir).forEach(file => {
-            fs.copyFileSync(
-              path.join(assetsDir, file),
-              path.join(destAssetsDir, file)
-            );
-          });
-        }
-        
-        const sharedTemplateDir = path.resolve(__dirname, 'public/shared-template');
-        const destSharedTemplateDir = path.resolve(__dirname, 'dist/public/shared-template');
-        if (fs.existsSync(sharedTemplateDir)) {
-          if (!fs.existsSync(destSharedTemplateDir)) {
-            fs.mkdirSync(destSharedTemplateDir, { recursive: true });
-          }
-          fs.readdirSync(sharedTemplateDir).forEach(file => {
-            fs.copyFileSync(
-              path.join(sharedTemplateDir, file),
-              path.join(destSharedTemplateDir, file)
-            );
-          });
-        }
-        
-        const imagesDir = path.resolve(__dirname, 'public/images');
-        const destImagesDir = path.resolve(__dirname, 'dist/public/images');
-        if (fs.existsSync(imagesDir)) {
-          if (!fs.existsSync(destImagesDir)) {
-            fs.mkdirSync(destImagesDir, { recursive: true });
-          }
-          fs.readdirSync(imagesDir).forEach(file => {
-            fs.copyFileSync(
-              path.join(imagesDir, file),
-              path.join(destImagesDir, file)
-            );
-          });
-        }
-        
-        const componentsDir = path.resolve(__dirname, 'public/components');
-        const destComponentsDir = path.resolve(__dirname, 'dist/public/components');
-        if (fs.existsSync(componentsDir)) {
-          if (!fs.existsSync(destComponentsDir)) {
-            fs.mkdirSync(destComponentsDir, { recursive: true });
-          }
-          fs.readdirSync(componentsDir).forEach(file => {
-            fs.copyFileSync(
-              path.join(componentsDir, file),
-              path.join(destComponentsDir, file)
-            );
-          });
-        }
+        });
       }
     }
   ],
