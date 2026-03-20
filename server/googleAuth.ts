@@ -192,20 +192,12 @@ export async function setupGoogleAuth(app: Express) {
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
                       window.close();
                     } else {
-                      // ⚠️ 수정금지(승인필요): 네이티브 앱 외부 브라우저 또는 WebView 대응
-                      // 외부 브라우저(Safari/Chrome)에서 열린 경우 → 딥링크로 앱 복귀
-                      // WebView 내에서 열린 경우 → localStorage 플래그 + 리다이렉트
+                      // ⚠️ 수정금지(승인필요): 2026-03-20 WebView/모바일 브라우저 대응 — 딥링크 제거, kakaoAuth.ts와 동일 패턴
+                      // 앱: openOAuthFlow가 location.href로 이동 → WebView 내 콜백 → window.opener 존재 → 위 분기에서 처리
+                      // 모바일 웹: location.href로 이동 → opener 없음 → 여기서 플래그 설정 후 / 이동
                       localStorage.setItem('auth_success', 'true');
                       localStorage.setItem('landingVisited', 'true');
-
-                      // 딥링크 시도 (네이티브 앱이 설치된 경우 앱으로 돌아감)
-                      var deepLink = 'sonanie-guide://auth-callback?success=true';
-                      window.location.replace(deepLink);
-
-                      // 딥링크 실패 시 (웹 브라우저) 3초 후 웹 루트로 이동
-                      setTimeout(function() {
-                        window.location.replace('/');
-                      }, 3000);
+                      window.location.replace('/');
                     }
                   } catch(e) {
                     // ⚠️ 수정금지(승인필요): 예외 시에도 인증 플래그 설정

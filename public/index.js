@@ -5583,9 +5583,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return (hasTouch && isSmallScreen) || mobileUA;
     }
 
-    // ⚠️ 수정금지(승인필요): 2026-03-20 OAuth 공용 함수 — WebView에서는 location.href 직접 이동, 웹에서는 팝업
+    // ⚠️ 수정금지(승인필요): 2026-03-20 OAuth 공용 함수 — WebView/모바일에서는 location.href 직접 이동, PC에서는 팝업
     function openOAuthFlow(url, windowName) {
-        if (isNativeApp) {
+        if (isNativeApp || isMobile()) {
             window.location.href = url;
             return;
         }
