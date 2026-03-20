@@ -45,7 +45,7 @@ push 성공 시 아래 메시지 출력:
 - 파일: [N]개 변경
 
 📱 앱 빌드:
-- EAS Build 자동 트리거됨 → Expo 대시보드에서 확인
+- EAS Build 수동 실행 필요: `cd mobile-app && eas build --platform android` (AAB) / `eas build --platform ios` (IPA)
 
 🌐 서버 배포:
 - Replit → Git 탭 → Pull 버튼 → Deploy
@@ -67,4 +67,4 @@ push 성공 시 아래 메시지 출력:
   - `mobile-app/package.json` — expo-speech-recognition 의존성 추가
   - `public/index.js` — 네이티브 마이크 브릿지 + OAuth WebView 대응 (openOAuthFlow 공용함수) + Apple 버튼 iOS 전체 표시
   - `public/profile.html` — backBtn 복구 + 구버전 인증모달 삭제 + 로그아웃 버튼 교체
-- **비고**: expo-speech-recognition 네이티브 모듈 추가 → EAS 새 빌드 필수 (AAB + IPA)
+- **비고**: expo-speech-recognition 네이티브 모듈 추가 → EAS 수동 빌드 필수 (`eas build --platform android/ios`)
