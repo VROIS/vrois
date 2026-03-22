@@ -13,7 +13,6 @@ import AppleStrategy from "passport-apple";
 import type { Express } from "express";
 import { storage } from "./storage";
 import { creditService } from "./creditService";
-import { ottStore } from "./ottStore";
 
 // ⚠️ 수정금지(승인필요): Apple OAuth 셋업 함수
 export async function setupAppleAuth(app: Express) {
@@ -161,9 +160,6 @@ export async function setupAppleAuth(app: Express) {
             console.error('Referral 처리 오류:', refError);
           }
 
-          // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 토큰 생성 — 앱 OAuth 세션 교환용
-          const ottToken = ottStore.create(user.id);
-
           // ⚠️ 수정금지(승인필요): 인증 완료 페이지 (googleAuth.ts와 동일한 디자인)
           res.send(`
             <!DOCTYPE html>
@@ -193,7 +189,7 @@ export async function setupAppleAuth(app: Express) {
                 @keyframes spin { to { transform: rotate(360deg); } }
               </style>
             </head>
-            <body data-ott-token="${ottToken}">
+            <body>
               <div class="spinner"></div>
               <script>
                 // ═══════════════════════════════════════════════════════════════
@@ -208,16 +204,14 @@ export async function setupAppleAuth(app: Express) {
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
                       window.close();
                     } else {
-                      // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 방식 — 앱은 토큰으로 복귀, 웹은 직접 이동
+                      // ⚠️ 수정금지(승인필요): 2026-03-22 딥링크 복원 — Apple OAuth는 App.js가 외부 브라우저(Safari/Chrome)로 열음
+                      // App.js handleDeepLink (line 101-114)가 딥링크 수신 → dismissBrowser → WebView 새로고침
+                      // 웹 브라우저: 딥링크 실패 → 1초 후 / 이동 (fallback)
                       localStorage.setItem('auth_success', 'true');
                       localStorage.setItem('landingVisited', 'true');
-                      var ottToken = document.body.getAttribute('data-ott-token');
-                      if (ottToken) {
-                        window.location.replace('sonanie-guide://auth-callback?token=' + ottToken);
-                        setTimeout(function() { window.location.replace('/'); }, 2000);
-                      } else {
-                        window.location.replace('/');
-                      }
+                      var deepLink = 'sonanie-guide://auth-callback?success=true';
+                      window.location.replace(deepLink);
+                      setTimeout(function() { window.location.replace('/'); }, 1000);
                     }
                   } catch(e) {
                     // ⚠️ 수정금지(승인필요): 예외 시에도 인증 플래그 설정

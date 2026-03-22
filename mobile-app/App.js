@@ -96,24 +96,14 @@ export default function App() {
   useEffect(() => {
     requestAndroidPermissions();
 
-    // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 딥링크 수신 — 토큰으로 WebView 세션 교환
-    // 외부 브라우저에서 sonanie-guide://auth-callback?token=xxx 수신
-    // → WebView를 /api/auth/exchange?token=xxx 로 이동 → 서버가 세션 생성 + 쿠키 설정
+    // ⚠️ 수정금지(승인필요): 2026-03-12 딥링크 수신 — Google OAuth 외부 브라우저 콜백
+    // 외부 브라우저에서 sonanie-guide://auth-callback?success=true 수신 시 WebView 새로고침
     const handleDeepLink = (event) => {
       const { url } = event;
-      if (url && url.includes('auth-callback')) {
+      if (url && url.includes('auth-callback') && url.includes('success=true')) {
+        // OAuth 성공 → 외부 브라우저 닫기 + WebView에 인증 플래그 설정 후 새로고침
         WebBrowser.dismissBrowser().catch(() => {});
-        // URL에서 토큰 추출
-        const tokenMatch = url.match(/[?&]token=([^&]+)/);
-        if (tokenMatch && tokenMatch[1] && webViewRef.current) {
-          // OTT 토큰 → WebView에서 서버로 직접 교환 (쿠키 정상 설정됨)
-          const exchangeUrl = `https://my-handyguide.replit.app/api/auth/exchange?token=${tokenMatch[1]}`;
-          webViewRef.current.injectJavaScript(`
-            window.location.replace('${exchangeUrl}');
-            true;
-          `);
-        } else if (webViewRef.current) {
-          // 토큰 없는 이전 방식 fallback
+        if (webViewRef.current) {
           webViewRef.current.injectJavaScript(`
             localStorage.setItem('auth_success', 'true');
             localStorage.setItem('landingVisited', 'true');

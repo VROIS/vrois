@@ -17,7 +17,6 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import type { Express } from "express";
 import { storage } from "./storage";
 import { creditService } from "./creditService";
-import { ottStore } from "./ottStore";
 
 export async function setupGoogleAuth(app: Express) {
   const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
@@ -147,9 +146,6 @@ export async function setupGoogleAuth(app: Express) {
             console.error('Referral 처리 오류:', refError);
           }
 
-          // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 토큰 생성 — 앱 OAuth 세션 교환용
-          const ottToken = ottStore.create(user.id);
-
           // ⚠️ 2025.11.12: 공유페이지와 100% 동일한 디자인
           res.send(`
             <!DOCTYPE html>
@@ -179,7 +175,7 @@ export async function setupGoogleAuth(app: Express) {
                 @keyframes spin { to { transform: rotate(360deg); } }
               </style>
             </head>
-            <body data-ott-token="${ottToken}">
+            <body>
               <div class="spinner"></div>
               <script>
                 // ═══════════════════════════════════════════════════════════════
@@ -196,20 +192,14 @@ export async function setupGoogleAuth(app: Express) {
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
                       window.close();
                     } else {
-                      // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 방식 — 앱은 토큰으로 복귀, 웹은 직접 이동
-                      // App.js가 Google OAuth를 외부 브라우저로 열음 → 쿠키 미공유
-                      // OTT: 서버가 일회용 토큰 생성 → 딥링크에 포함 → WebView가 토큰으로 세션 교환
+                      // ⚠️ 수정금지(승인필요): 2026-03-22 딥링크 복원 — Google OAuth는 App.js가 외부 브라우저(Safari/Chrome)로 열음
+                      // App.js handleDeepLink (line 101-114)가 딥링크 수신 → dismissBrowser → WebView 새로고침
+                      // 웹 브라우저: 딥링크 실패 → 1초 후 / 이동 (fallback)
                       localStorage.setItem('auth_success', 'true');
                       localStorage.setItem('landingVisited', 'true');
-                      var ottToken = document.body.getAttribute('data-ott-token');
-                      if (ottToken) {
-                        // 앱에서 외부 브라우저로 열린 경우 → 딥링크로 앱 복귀 (토큰 포함)
-                        window.location.replace('sonanie-guide://auth-callback?token=' + ottToken);
-                        setTimeout(function() { window.location.replace('/'); }, 2000);
-                      } else {
-                        // 웹 브라우저 → 직접 이동 (딥링크 없음)
-                        window.location.replace('/');
-                      }
+                      var deepLink = 'sonanie-guide://auth-callback?success=true';
+                      window.location.replace(deepLink);
+                      setTimeout(function() { window.location.replace('/'); }, 1000);
                     }
                   } catch(e) {
                     // ⚠️ 수정금지(승인필요): 예외 시에도 인증 플래그 설정

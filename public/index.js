@@ -2413,15 +2413,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return reject(err);
             }
 
-            const preferredConstraints = { video: { facingMode: { ideal: 'environment' } }, audio: false };
-            const fallbackConstraints = { video: true, audio: false };
+            // ⚠️ 수정금지(승인필요): 2026-03-22 Android Chromium 후면카메라 강제
+            // Chromium Bug #290161: facingMode ideal:'environment' 무시 → enumerateDevices+deviceId로 해결
+            // 출처: adapter.js #820, react-webcam #170, html5-qrcode #807, Twilio Blog
             let cameraStream;
 
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia(preferredConstraints);
+                // 1단계: 임시 스트림으로 카메라 권한 획득 (enumerateDevices에 label 필요)
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                tempStream.getTracks().forEach(t => t.stop());
+
+                // 2단계: 기기 카메라 목록 조회 → 후면 카메라 찾기
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const cameras = devices.filter(d => d.kind === 'videoinput');
+                const backCamera = cameras.find(d =>
+                    /back|rear|environment|후면/i.test(d.label)
+                );
+
+                // 3단계: deviceId로 정확히 후면 카메라 지정
+                if (backCamera) {
+                    cameraStream = await navigator.mediaDevices.getUserMedia({
+                        video: { deviceId: { exact: backCamera.deviceId } }, audio: false
+                    });
+                } else {
+                    // 후면 카메라 label 매칭 실패 → facingMode fallback
+                    cameraStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { exact: 'environment' } }, audio: false
+                    });
+                }
             } catch (err) {
                 try {
-                    cameraStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                    // 최후 수단: 아무 카메라
+                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 } catch (fallbackErr) {
                     return reject(fallbackErr);
                 }
