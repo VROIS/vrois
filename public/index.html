@@ -132,15 +132,18 @@
             background: transparent;
             z-index: 20;
         }
-        .footer-safe-area { 
-            width: 100%; 
-            height: 100px; 
-            flex-shrink: 0; 
-            z-index: 30; 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: center; 
+        /* ⚠️ 수정금지(승인필요): 2026-03-22 Android edgeToEdge 네비바 겹침 해결 */
+        /* margin-bottom 사용 (App.js가 padding-bottom:0!important 주입하므로 padding 불가) */
+        .footer-safe-area {
+            width: 100%;
+            height: 100px;
+            flex-shrink: 0;
+            z-index: 30;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
             padding: 0 1rem;
+            margin-bottom: env(safe-area-inset-bottom, 0px);
         }
         .loader-container { 
             height: 100%; 
@@ -564,7 +567,7 @@
         </script>
         
         <!-- 상단 로고 영역 - 상단 이동 (2026-01-24) -->
-        <div class="flex items-center justify-center" style="height: 45vh; flex-shrink: 0; margin-top: 20px; padding-top: env(safe-area-inset-top, 0);">
+        <div class="flex items-center justify-center" style="height: 45vh; flex-shrink: 0; margin-top: 72px; padding-top: env(safe-area-inset-top, 0);">
             <img src="/images/landing-logo.jpg" alt="내손안의 가이드 - Your Expert in Hand" class="max-w-[85%] h-full object-contain">
         </div>
         
