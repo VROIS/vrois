@@ -788,6 +788,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 토큰 교환 엔드포인트
+  // 앱 WebView에서 호출: /api/auth/exchange?token=xxx → 세션 생성 → / 리다이렉트
+  // 외부 브라우저 쿠키 미공유 문제를 원천 해결 (Auth0/Keycloak 표준 패턴)
+  app.get('/api/auth/exchange', async (req: any, res) => {
+    const { ottStore } = await import('./ottStore');
+    const token = req.query.token as string;
+    if (!token) return res.status(400).send('Missing token');
+
+    const userId = ottStore.consume(token);
+    if (!userId) return res.status(401).send('Invalid or expired token');
+
+    try {
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).send('User not found');
+
+      // Passport 로그인 — WebView 내에서 직접 세션+쿠키 생성
+      req.login(user, (err: any) => {
+        if (err) {
+          console.error('OTT exchange login error:', err);
+          return res.status(500).send('Login failed');
+        }
+        console.log(`🔑 OTT exchange: user ${user.id} session created in WebView`);
+        res.redirect('/');
+      });
+    } catch (e) {
+      console.error('OTT exchange error:', e);
+      res.status(500).send('Exchange failed');
+    }
+  });
+
   // Logout endpoint
   app.get('/api/auth/logout', (req: any, res) => {
     console.log('🔓 Logging out user...');
