@@ -4197,7 +4197,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // synth.speaking이든 아니든, onend가 안 불렸으면 강제 진행
             // iOS에서 synth.speaking이 false인데 onend도 안 불리는 경우 존재
             console.warn('[TTS] onend 미발동 워치독 발동 → 강제 다음 문장');
-            synth.cancel();
+            // ⚠️ 수정금지(승인필요): 2026-03-23 iOS에서 cancel() 스킵 (세션 파괴 방지)
+            if (detectPlatform() !== 'ios') { synth.cancel(); }
             element.classList.remove('speaking');
             window.__ttsErrorCount = 0;
             if (!isPaused) {
@@ -4257,9 +4258,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         updateAudioButton('pause');
-        // ⚠️ 수정금지(승인필요): 2026-03-17 iOS WKWebView 안전장치 — speak() 전에 이전 utterance 정리
-        // iOS에서 synth.speaking이 true인 상태에서 새 speak() 호출하면 무시될 수 있음
-        if (synth.speaking || synth.pending) {
+        // ⚠️ 수정금지(승인필요): 2026-03-23 iOS WebKit — synth.cancel()이 음성 세션 파괴 → TTS 무음
+        // Chrome/Android: cancel() 필요 (speaking 상태에서 새 speak() 무시됨)
+        // iOS: cancel() 하면 세션 자체가 죽음 → 스킵
+        if (detectPlatform() !== 'ios' && (synth.speaking || synth.pending)) {
             synth.cancel();
         }
         synth.speak(utterance);
