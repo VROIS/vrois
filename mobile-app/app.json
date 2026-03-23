@@ -50,9 +50,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4285F4"
       },
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
       "package": "com.sonanie.guide",
-      "versionCode": 11,
+      "versionCode": 12,
       "blockedPermissions": ["ACTIVITY_RECOGNITION", "READ_CONTACTS", "WRITE_CONTACTS", "USE_BIOMETRIC", "USE_FINGERPRINT"],
       "permissions": [
         "CAMERA",
