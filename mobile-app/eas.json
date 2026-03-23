@@ -30,13 +30,11 @@
       "android": {
         "buildType": "app-bundle",
         "credentialsSource": "local",
-        "image": "ubuntu-22.04-jdk-17-ndk-r26b",
-        "prebuildCommand": "chmod -R 755 ."
+        "image": "ubuntu-22.04-jdk-17-ndk-r26b"
       },
       "ios": {
         "credentialsSource": "local",
-        "image": "sdk-54",
-        "prebuildCommand": "chmod -R 755 ."
+        "image": "sdk-54"
       }
     }
   },
