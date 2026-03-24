@@ -208,16 +208,10 @@ export async function setupAppleAuth(app: Express) {
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
                       window.close();
                     } else {
-                      // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 방식 — 앱은 토큰으로 복귀, 웹은 직접 이동
+                      // ⚠️ 수정금지(승인필요): 2026-03-24 OTT 딥링크 제거 — 웹에서 딥링크 발사하면 앱이 열려 세션 깨짐
                       localStorage.setItem('auth_success', 'true');
                       localStorage.setItem('landingVisited', 'true');
-                      var ottToken = document.body.getAttribute('data-ott-token');
-                      if (ottToken) {
-                        window.location.replace('sonanie-guide://auth-callback?token=' + ottToken);
-                        setTimeout(function() { window.location.replace('/'); }, 2000);
-                      } else {
-                        window.location.replace('/');
-                      }
+                      window.location.replace('/');
                     }
                   } catch(e) {
                     // ⚠️ 수정금지(승인필요): 예외 시에도 인증 플래그 설정

@@ -83,14 +83,15 @@
             color: #FBBF24; /* Yellow dot color from example */
         }
 
-        .full-screen-bg { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100vw; 
-            height: 100vh; 
-            object-fit: cover; 
+        .full-screen-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
             z-index: 1;
+            pointer-events: none; /* ⚠️ 수정금지(승인필요): 2026-03-24 Android WebView video SurfaceView 터치 가로채기 방지 */
             transition: filter 0.5s ease-out, opacity 0.5s ease-out;
         }
         .full-screen-bg.image-loading {

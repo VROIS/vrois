@@ -2413,18 +2413,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return reject(err);
             }
 
-            // ⚠️ 수정금지(승인필요): 2026-03-24 카메라 코드 2월 원본 복원 — enumerateDevices 제거
-            // Android WebView에서 임시스트림+stop+재요청 시 카메라 충돌 (셀카 번쩍→종료→재셀카)
-            const preferredConstraints = { video: { facingMode: { ideal: 'environment' } }, audio: false };
-            const fallbackConstraints = { video: true, audio: false };
+            // ⚠️ 수정금지(승인필요): 2026-03-24 getSettings 기반 카메라 전환
+            // Samsung A36에서 facingMode:ideal 무시 → 먼저 열고 전면이면 후면으로 전환
             let cameraStream;
 
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia(preferredConstraints);
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                const track = cameraStream.getVideoTracks()[0];
+                const settings = track.getSettings();
+                if (settings.facingMode === 'user') {
+                    track.stop();
+                    try {
+                        cameraStream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: { exact: 'environment' } }, audio: false
+                        });
+                    } catch (e) {
+                        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    }
+                }
             } catch (err) {
-                console.warn("Could not get camera with ideal constraints, falling back to basic.", err);
                 try {
-                    cameraStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 } catch (fallbackErr) {
                     return reject(fallbackErr);
                 }

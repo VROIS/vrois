@@ -196,20 +196,11 @@ export async function setupGoogleAuth(app: Express) {
                       window.opener.postMessage({ type: 'oauth_success' }, window.location.origin);
                       window.close();
                     } else {
-                      // ⚠️ 수정금지(승인필요): 2026-03-22 OTT 방식 — 앱은 토큰으로 복귀, 웹은 직접 이동
-                      // App.js가 Google OAuth를 외부 브라우저로 열음 → 쿠키 미공유
-                      // OTT: 서버가 일회용 토큰 생성 → 딥링크에 포함 → WebView가 토큰으로 세션 교환
+                      // ⚠️ 수정금지(승인필요): 2026-03-24 OTT 딥링크 제거 — 웹에서 딥링크 발사하면 앱이 열려 세션 깨짐
+                      // 모든 환경에서 동일하게 / 이동 (kakaoAuth.ts와 동일 패턴)
                       localStorage.setItem('auth_success', 'true');
                       localStorage.setItem('landingVisited', 'true');
-                      var ottToken = document.body.getAttribute('data-ott-token');
-                      if (ottToken) {
-                        // 앱에서 외부 브라우저로 열린 경우 → 딥링크로 앱 복귀 (토큰 포함)
-                        window.location.replace('sonanie-guide://auth-callback?token=' + ottToken);
-                        setTimeout(function() { window.location.replace('/'); }, 2000);
-                      } else {
-                        // 웹 브라우저 → 직접 이동 (딥링크 없음)
-                        window.location.replace('/');
-                      }
+                      window.location.replace('/');
                     }
                   } catch(e) {
                     // ⚠️ 수정금지(승인필요): 예외 시에도 인증 플래그 설정
