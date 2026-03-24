@@ -2399,24 +2399,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // showPage(featuresPage); ← 제거됨
         } finally {
             mainLoader.classList.add('hidden');
-
-            // ⚠️ 임시 디버그 박스 — Android 풋터 먹통 진단용 (테스트 후 삭제)
-            if (!document.getElementById('debugBox')) {
-                var debugBox = document.createElement('div');
-                debugBox.id = 'debugBox';
-                debugBox.style.cssText = 'position:fixed;top:50%;left:10%;right:10%;transform:translateY(-50%);background:rgba(0,0,0,0.85);color:#0f0;font-size:12px;z-index:99999;padding:8px;pointer-events:none;border-radius:8px;';
-                document.body.appendChild(debugBox);
-                var footer = document.querySelector('.footer-safe-area');
-                document.addEventListener('touchstart', function(e) {
-                    var rect = footer.getBoundingClientRect();
-                    var inFooter = e.touches[0].clientY >= rect.top;
-                    debugBox.textContent = 'touch y:' + Math.round(e.touches[0].clientY) +
-                        ' footer top:' + Math.round(rect.top) +
-                        ' inFooter:' + inFooter +
-                        ' target:' + e.target.tagName + '#' + (e.target.id || e.target.className.split(' ')[0]) +
-                        ' overlay:' + document.getElementById('cameraStartOverlay').classList.contains('hidden');
-                }, true);
-            }
         }
     }
 

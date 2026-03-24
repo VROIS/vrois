@@ -67,8 +67,8 @@ const IOS_USER_AGENT =
 const INJECTED_JS = `
 (function() {
   var style = document.createElement('style');
+  // ⚠️ 수정금지(승인필요): 2026-03-24 touch-action:manipulation 제거 — Android WebView click 합성 방해 (Issue #2478)
   style.textContent =
-    'button, a, input, select, textarea, [role="button"], [onclick] { touch-action: manipulation; }' +
     '.footer-safe-area { padding-bottom: 0 !important; }' +
     '.gallery-footer { padding-bottom: 0 !important; }' +
     '.bottom-nav { padding-bottom: 0 !important; }';
@@ -634,7 +634,8 @@ export default function App() {
         injectedJavaScript={INJECTED_JS}
         onShouldStartLoadWithRequest={handleNavigationRequest}
         onMessage={handleMessage}
-        androidLayerType="hardware"
+        androidLayerType="none"  // ⚠️ 수정금지(승인필요): 2026-03-24 hardware→none — GPU 충돌로 카메라 검정+click 미발동 (Issue #2698)
+        nestedScrollEnabled={true}  // ⚠️ 수정금지(승인필요): 2026-03-24 Android onClick 미발동 워크어라운드 (Issue #2478)
         onAndroidPermissionRequest={handlePermissionRequest}
         // ⚠️ 수정금지(승인필요): 2026-03-17 플랫폼별 UA 적용 (Google OAuth 403 방지)
         userAgent={Platform.OS === 'android' ? ANDROID_USER_AGENT : IOS_USER_AGENT}

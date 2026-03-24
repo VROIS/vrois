@@ -52,7 +52,7 @@
       },
       "edgeToEdgeEnabled": false,
       "package": "com.sonanie.guide",
-      "versionCode": 12,
+      "versionCode": 13,
       "blockedPermissions": ["ACTIVITY_RECOGNITION", "READ_CONTACTS", "WRITE_CONTACTS", "USE_BIOMETRIC", "USE_FINGERPRINT"],
       "permissions": [
         "CAMERA",
