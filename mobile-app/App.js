@@ -630,11 +630,11 @@ export default function App() {
         mixedContentMode="compatibility"
         sharedCookiesEnabled={true}
         thirdPartyCookiesEnabled={true}
-        mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
+        mediaCapturePermissionGrantType="grant"  // ⚠️ 수정금지(승인필요): 2026-03-24 카메라/마이크 무조건 허용 (grantIfSameHostElsePrompt → grant)
         injectedJavaScript={INJECTED_JS}
         onShouldStartLoadWithRequest={handleNavigationRequest}
         onMessage={handleMessage}
-        androidLayerType="none"  // ⚠️ 수정금지(승인필요): 2026-03-24 hardware→none — GPU 충돌로 카메라 검정+click 미발동 (Issue #2698)
+        androidLayerType="hardware"  // ⚠️ 수정금지(승인필요): 2026-03-24 hardware 복원 — 카메라 렌더링에 GPU 필수
         nestedScrollEnabled={true}  // ⚠️ 수정금지(승인필요): 2026-03-24 Android onClick 미발동 워크어라운드 (Issue #2478)
         onAndroidPermissionRequest={handlePermissionRequest}
         // ⚠️ 수정금지(승인필요): 2026-03-17 플랫폼별 UA 적용 (Google OAuth 403 방지)
