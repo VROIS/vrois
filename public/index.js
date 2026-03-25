@@ -1651,22 +1651,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ⚠️ 수정금지(승인필요): 독립페이지 SPA 오버레이 (window.open 대체)
     // ⚠️ 수정금지(승인필요) — profile.html, user-guide.html을 iframe으로 인앱 표시 + base target _top 자동 주입 (2026-03-10)
+    // ⚠️ 수정금지(승인필요): 2026-03-24 base target="_top" 제거 — 구글 번역이 iframe 내 navigation 유발 → 부모 프레임을 랜딩으로 이동시킴
+    // 공유페이지 내 링크는 이미 postMessage('closeOverlay')로 처리되므로 base target 불필요
     function openPageOverlay(url) {
         const overlay = document.getElementById('pageOverlay');
         const iframe = document.getElementById('pageOverlayIframe');
         if (!overlay || !iframe) return;
         iframe.src = url;
         overlay.classList.remove('hidden');
-        iframe.onload = function() {
-            try {
-                var doc = iframe.contentDocument;
-                if (doc && !doc.querySelector('base[target="_top"]')) {
-                    var base = doc.createElement('base');
-                    base.target = '_top';
-                    doc.head.appendChild(base);
-                }
-            } catch(e) {}
-        };
     }
     window.openPageOverlay = openPageOverlay;
 
